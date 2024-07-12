@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// voucher thêm trực tiếp vào voucher inventory của user gốc, item thêm vào inventory của game-profile
+// https://prismaliser.app/
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     Item[]
+  users     User[]
+  // Company   Company?
+  company   String[]
+
+  lives Int @default(3)
+}
+
+model Item {
+  id            Int             @id @default(autoincrement())
+  name          String
+  image         String?
+  description   String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  InventoryItem InventoryItem[]
+  games         Game[]
+  Transaction   Transaction[]
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Game        Game          @relation(fields: [gameId], references: [id])
+  lives       Int           @default(3)
+  Sent        Transaction[] @relation("Sender")
+  Received    Transaction[] @relation("Receiver")
+  Inventory   Inventory     @relation(fields: [inventoryId], references: [id])
+  inventoryId Int           @unique
+  gameId      Int
+}
+
+model Inventory {
+  id            Int             @id @default(autoincrement())
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  InventoryItem InventoryItem[]
+  User          User?
+}
+
+model InventoryItem {
+  id           Int           @id @default(autoincrement())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  Item         Item          @relation(fields: [itemId], references: [id])
+  itemId       Int
+  Inventory    Inventory     @relation(fields: [inventoryId], references: [id])
+  inventoryId  Int
+  amount       Int?
+  transactions Transaction[]
+}
+
+model Transaction {
+  id              Int           @id @default(autoincrement())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  InventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  inventoryItemId Int
+  Item            Item?         @relation(fields: [itemId], references: [id])
+  itemId          Int?
+  Sender          User          @relation(fields: [senderId], references: [id], name: "Sender")
+  senderId        Int
+  Receiver        User          @relation(fields: [receiverId], references: [id], name: "Receiver")
+  receiverId      Int
+}
