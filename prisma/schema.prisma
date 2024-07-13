@@ -1,0 +1,272 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  name            String?
+  userName        String    @unique
+  phoneNumber     String?
+  password        String
+  email           String    @unique
+  avatar          String?
+  role            UserRole
+  isActive        Boolean   @default(true)
+  status          String?
+  facebookAccount String?
+  OTP             String?
+  OTP_method      OTPMethod?
+  dateOfBirth     DateTime?
+  sex             Sex?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  BrandToStaffMapping BrandToStaffMapping[]
+  GameToUserMapping GameToUserMapping[]
+  GameToPlayerMapping GameToPlayerMapping[]
+  ItemToPlayerMapping ItemToPlayerMapping[]
+  EventToPlayerMapping EventToPlayerMapping[]
+  Transaction_sender  Transaction[] @relation("Transaction_sender")
+  Transaction_receiver Transaction[] @relation("Transaction_receiver")
+}
+
+model Brand {
+  id         Int       @id @default(autoincrement())
+  address    String?
+  category   BrandCategory
+  longitude  Float
+  latitude   Float
+  status     String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  BrandToStaffMapping BrandToStaffMapping[]
+  Collection Collection[]
+}
+
+model BrandToStaffMapping {
+  id         Int    @id @default(autoincrement())
+  staffId    Int
+  brandId    Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  User       User    @relation(fields: [staffId], references: [id])
+  Brand      Brand   @relation(fields: [brandId], references: [id])
+  @@unique([staffId, brandId])
+}
+
+model QuizGame {
+  id            Int       @id @default(autoincrement())
+  gameName      String
+  startTime     DateTime
+  endTime       DateTime
+  playerQuantity Int
+  companyId     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  QuizGameQuestionToQuizGameMapping QuizGameQuestionToQuizGameMapping[]
+  GameToUserMapping GameToUserMapping[]
+  GameToPlayerMapping GameToPlayerMapping[]
+  Transaction   Transaction[]
+  ItemToPlayerMapping ItemToPlayerMapping[]
+}
+
+model QuizGameQuestion {
+  id            Int       @id @default(autoincrement())
+  content       String
+  images        String[]
+  answer        String[]
+  correct_answer String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  QuizGameQuestionToQuizGameMapping QuizGameQuestionToQuizGameMapping[]
+}
+
+model QuizGameAnswer {
+  id            Int       @id @default(autoincrement())
+  content       String
+  image         String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model QuizGameQuestionToQuizGameMapping {
+  id             Int     @id @default(autoincrement())
+  quizQuestionId Int
+  quizGameId     Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  QuizGame       QuizGame @relation(fields: [quizGameId], references: [id])
+  QuizGameQuestion QuizGameQuestion @relation(fields: [quizQuestionId], references: [id])
+  @@unique([quizQuestionId, quizGameId])
+}
+
+model GameToUserMapping {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  gameId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User    @relation(fields: [userId], references: [id])
+  QuizGame  QuizGame @relation(fields: [gameId], references: [id])
+  @@unique([userId, gameId])
+}
+
+model ShakeGame {
+  id            Int       @id @default(autoincrement())
+  gameName      String
+  startTime     DateTime
+  endTime       DateTime
+  playerQuantity Int
+  companyId     Int
+  items         String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Item {
+  id          Int       @id @default(autoincrement())
+  name        String
+  images      String[]
+  content     String
+  releaseDate DateTime
+  status      ItemStatus
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Collection  Collection @relation(fields: [id], references: [id])
+  ItemToPlayerMapping ItemToPlayerMapping[]
+  Transaction Transaction[]
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  name        String
+  images      String[]
+  vouchers    String[]
+  startTime   DateTime
+  endTime     DateTime
+  brands      String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  EventToPlayerMapping EventToPlayerMapping[]
+}
+
+model Voucher {
+  id          Int       @id @default(autoincrement())
+  name        String
+  qr_code     String
+  images      String[]
+  value       Float
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Collection {
+  id          Int       @id @default(autoincrement())
+  items       String[]
+  releaseDate DateTime
+  status      CollectionStatus
+  brandId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Brand       Brand    @relation(fields: [brandId], references: [id])
+  Item        Item[]
+}
+
+model Transaction {
+  id          Int       @id @default(autoincrement())
+  senderId    Int
+  receiverId  Int
+  itemId      Int
+  gameId      Int
+  donationTime DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  sender      User     @relation("Transaction_sender", fields: [senderId], references: [id])
+  receiver    User     @relation("Transaction_receiver", fields: [receiverId], references: [id])
+  Item        Item     @relation(fields: [itemId], references: [id])
+  QuizGame    QuizGame @relation(fields: [gameId], references: [id])
+}
+
+model GameToPlayerMapping {
+  id        Int     @id @default(autoincrement())
+  gameId    Int
+  playerId  Int
+  liveCount Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User    @relation(fields: [playerId], references: [id])
+  QuizGame  QuizGame @relation(fields: [gameId], references: [id])
+  @@unique([gameId, playerId])
+}
+
+model ItemToPlayerMapping {
+  id        Int     @id @default(autoincrement())
+  gameId    Int
+  playerId  Int
+  itemId    Int
+  isDeleted Boolean @default(false)
+  amount    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User    @relation(fields: [playerId], references: [id])
+  Item      Item    @relation(fields: [itemId], references: [id])
+  QuizGame  QuizGame @relation(fields: [gameId], references: [id])
+  @@unique([gameId, playerId, itemId])
+}
+
+model EventToPlayerMapping {
+  id        Int     @id @default(autoincrement())
+  playerId  Int
+  eventId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User    @relation(fields: [playerId], references: [id])
+  Event     Event   @relation(fields: [eventId], references: [id])
+  @@unique([playerId, eventId])
+}
+
+enum UserRole {
+  admin
+  staff
+  player
+}
+
+enum OTPMethod {
+  email
+  phone
+}
+
+enum Sex {
+  male
+  female
+  other
+}
+
+enum BrandCategory {
+  medical
+  education
+  food
+}
+
+enum ItemStatus {
+  active
+  inactive
+}
+
+enum CollectionStatus {
+  active
+  inactive
+}
