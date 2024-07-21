@@ -1,26 +1,41 @@
 import { Injectable } from '@nestjs/common';
-import { CreateQuizInput } from './dto/create-quiz.input';
-import { UpdateQuizInput } from './dto/update-quiz.input';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateQuizGameInput } from './dto/create-quiz.input';
+import { UpdateQuizGameInput } from './dto/update-quiz.input';
 
 @Injectable()
-export class QuizService {
-  create(createQuizInput: CreateQuizInput) {
-    return 'This action adds a new quiz';
+export class QuizGameService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createQuizGameInput: CreateQuizGameInput) {
+    return await this.prisma.quizGame.create({
+      data: createQuizGameInput,
+    });
   }
 
-  findAll() {
-    return `This action returns all quiz`;
+  async findAll() {
+    return await this.prisma.quizGame.findMany({
+      include: { questions: true },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} quiz`;
+  async findOne(id: number) {
+    return await this.prisma.quizGame.findUnique({
+      where: { id },
+      include: { questions: true },
+    });
   }
 
-  update(id: number, updateQuizInput: UpdateQuizInput) {
-    return `This action updates a #${id} quiz`;
+  async update(id: number, updateQuizGameInput: UpdateQuizGameInput) {
+    return await this.prisma.quizGame.update({
+      where: { id },
+      data: updateQuizGameInput,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} quiz`;
+  async remove(id: number) {
+    return await this.prisma.quizGame.delete({
+      where: { id },
+    });
   }
 }
