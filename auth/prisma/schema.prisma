@@ -16,19 +16,22 @@ datasource db {
 model User {
   id              Int      @id @default(autoincrement())
   name            String
-  userName        String   @unique
-  phoneNumber     String   @unique
-  password        String
+  userName        String   
+  phoneNumber     String   
+  hashedPassword  String
   email           String   @unique
   avatar          String?
   role            Role
   isActive        Boolean  @default(true)
   status          String?
-  facebookAccount String?
+  facebookAccount String? 
   OTP             String?
   OTP_method      OTPMethod
   dateOfBirth     DateTime
   sex             Sex
+  hashedRefreshToken String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
 }
 
 enum Role {
