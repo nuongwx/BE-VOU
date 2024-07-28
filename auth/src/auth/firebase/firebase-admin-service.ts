@@ -1,8 +1,21 @@
 import * as admin from 'firebase-admin';
 import { Injectable } from '@nestjs/common';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
 
-const serviceAccount = require(path.join(__dirname, '../firebase/firebase-service-account.json'));
+dotenv.config();
+
+const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+if (!serviceAccountPath) {
+  throw new Error('FIREBASE_SERVICE_ACCOUNT_PATH environment variable is not set');
+}
+
+const absoluteServiceAccountPath = path.resolve(
+  process.cwd(), // Ensure it's relative to the project root
+  serviceAccountPath
+);
+
+const serviceAccount = require(absoluteServiceAccountPath);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

@@ -9,6 +9,7 @@ import { LogoutResponse } from 'src/auth/dto/logout-response';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
+
 @Resolver(() => Auth)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
