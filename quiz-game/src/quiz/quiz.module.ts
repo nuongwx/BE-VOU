@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { QuizService } from './quiz.service';
-import { QuizResolver } from './quiz.resolver';
+import { QuizGameService } from './quiz.service';
+import { QuizGameResolver } from './quiz.resolver';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
-  providers: [QuizResolver, QuizService]
+  providers: [QuizGameResolver, QuizGameService, PrismaService],
 })
 export class QuizModule {}

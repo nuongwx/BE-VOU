@@ -1,7 +1,22 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field, Int } from '@nestjs/graphql';
+import { IsDateString } from 'class-validator';
 
 @InputType()
-export class CreateQuizInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+export class CreateQuizGameInput {
+  @Field()
+  gameName: string;
+
+  @Field()
+  @IsDateString()
+  startTime: Date;
+
+  @Field()
+  @IsDateString()
+  endTime: Date;
+
+  @Field(() => Int)
+  playerQuantity: number;
+
+  @Field(() => Int)
+  companyId: number;
 }

@@ -1,7 +1,13 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 
 @ObjectType()
-export class Answer {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+export class QuizGameAnswer {
+  @Field(() => Int)
+  id: number;
+
+  @Field()
+  content: string;
+
+  @Field({ nullable: true })
+  image?: string;
 }
