@@ -11,6 +11,8 @@ import { InventoryItemModule } from './inventory-item/inventory-item.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './user/user.module';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { RequestModule } from './request/request.module';
 
 @Module({
   imports: [
@@ -19,9 +21,11 @@ import { UserModule } from './user/user.module';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       autoSchemaFile: true,
-      playground: true,
+      playground: false,
       debug: true,
       driver: ApolloDriver,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      introspection: true,
     }),
     PrismaModule,
     GameModule,
@@ -30,6 +34,7 @@ import { UserModule } from './user/user.module';
     InventoryModule,
     TransactionModule,
     UserModule,
+    RequestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

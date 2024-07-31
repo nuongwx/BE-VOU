@@ -19,7 +19,7 @@ export class InventoryItemResolver {
     return this.inventoryItemService.create(createInventoryItemInput);
   }
 
-  @Query(() => [InventoryItem], { name: 'inventoryItem' })
+  @Query(() => [InventoryItem], { name: 'inventoryItems' })
   findAll() {
     return this.inventoryItemService.findAll();
   }
@@ -54,7 +54,7 @@ export class InventoryItemResolver {
 
   @ResolveField('item', () => Item, { description: 'Original Item' })
   item(@Parent() inventoryItem: InventoryItem) {
-    return this.prisma.item.findFirst({
+    return this.prisma.item.findFirstOrThrow({
       where: {
         InventoryItem: {
           some: {

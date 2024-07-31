@@ -19,7 +19,7 @@ export class InventoryResolver {
     return this.inventoryService.create(createInventoryInput);
   }
 
-  @Query(() => [Inventory], { name: 'inventory' })
+  @Query(() => [Inventory], { name: 'inventories' })
   findAll() {
     return this.inventoryService.findAll();
   }
@@ -39,12 +39,12 @@ export class InventoryResolver {
     return this.inventoryService.remove(id);
   }
 
-  @ResolveField('user', () => [User], { description: 'User' })
-  user(@Parent() user: User) {
-    return this.prisma.user.findMany({
+  @ResolveField('user', () => User, { description: 'User' })
+  user(@Parent() inventory: Inventory) {
+    return this.prisma.user.findFirstOrThrow({
       where: {
         Inventory: {
-          id: user.id,
+          id: inventory.id,
         },
       },
     });

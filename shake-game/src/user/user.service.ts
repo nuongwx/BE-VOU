@@ -9,7 +9,7 @@ export class UserService {
 
   async create(createUserInput: CreateUserInput) {
     const lives = await this.prisma.game
-      .findFirst({
+      .findUniqueOrThrow({
         where: {
           id: createUserInput.gameId,
         },
@@ -37,7 +37,7 @@ export class UserService {
   }
 
   findOne(id: number) {
-    return this.prisma.user.findFirst({
+    return this.prisma.user.findUniqueOrThrow({
       where: { id },
     });
   }

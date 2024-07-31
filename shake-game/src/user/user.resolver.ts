@@ -6,6 +6,8 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Inventory } from 'src/inventory/entities/inventory.entity';
 import { Game } from 'src/game/entities/game.entity';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
+import { Request } from 'src/request/entities/request.entity';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -40,21 +42,57 @@ export class UserResolver {
   }
 
   @ResolveField('game', () => Game, { description: 'Game' })
-  game(@Parent() game: Game) {
-    return this.prisma.game.findFirst({
+  game(@Parent() user: User) {
+    return this.prisma.game.findFirstOrThrow({
       where: {
-        id: game.id,
+        users: {
+          some: {
+            id: user.id,
+          },
+        },
       },
     });
   }
 
   @ResolveField('inventory', () => Inventory, { description: 'Inventory' })
   inventory(@Parent() user: User) {
-    return this.prisma.inventory.findFirst({
+    return this.prisma.inventory.findFirstOrThrow({
       where: {
         User: {
           id: user.id,
         },
+      },
+    });
+  }
+
+  @ResolveField('transactions', () => [Transaction], { description: 'Transactions' })
+  transactions(@Parent() user: User) {
+    return this.prisma.transaction.findMany({
+      where: {
+        OR: [
+          {
+            senderId: user.id,
+          },
+          {
+            receiverId: user.id,
+          },
+        ],
+      },
+    });
+  }
+
+  @ResolveField('requests', () => [Request], { description: 'Live Requests' })
+  requests(@Parent() user: User) {
+    return this.prisma.request.findMany({
+      where: {
+        OR: [
+          {
+            senderId: user.id,
+          },
+          {
+            receiverId: user.id,
+          },
+        ],
       },
     });
   }

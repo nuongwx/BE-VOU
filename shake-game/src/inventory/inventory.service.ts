@@ -24,7 +24,7 @@ export class InventoryService {
   }
 
   findOne(id: number) {
-    return this.prisma.inventory.findFirst({
+    return this.prisma.inventory.findUniqueOrThrow({
       where: {
         id: id,
       },

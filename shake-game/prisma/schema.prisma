@@ -42,16 +42,18 @@ model Item {
 }
 
 model User {
-  id          Int           @id @default(autoincrement())
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  Game        Game          @relation(fields: [gameId], references: [id])
-  lives       Int           @default(3)
-  Sent        Transaction[] @relation("Sender")
-  Received    Transaction[] @relation("Receiver")
-  Inventory   Inventory     @relation(fields: [inventoryId], references: [id])
-  inventoryId Int           @unique
-  gameId      Int
+  id              Int           @id @default(autoincrement())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  Game            Game          @relation(fields: [gameId], references: [id])
+  lives           Int           @default(3)
+  Sent            Transaction[] @relation("Sender")
+  Received        Transaction[] @relation("Receiver")
+  Inventory       Inventory     @relation(fields: [inventoryId], references: [id])
+  inventoryId     Int           @unique
+  gameId          Int
+  RequestSent     Request[]     @relation("Request Sender")
+  RequestReceived Request[]     @relation("Request Receiver")
 }
 
 model Inventory {
@@ -86,4 +88,15 @@ model Transaction {
   senderId        Int
   Receiver        User          @relation(fields: [receiverId], references: [id], name: "Receiver")
   receiverId      Int
+}
+
+model Request {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Sender     User     @relation(fields: [senderId], references: [id], name: "Request Sender")
+  senderId   Int
+  Receiver   User     @relation(fields: [receiverId], references: [id], name: "Request Receiver")
+  receiverId Int
+  isAccepted Boolean  @default(false)
 }

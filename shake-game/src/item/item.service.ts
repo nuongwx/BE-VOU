@@ -18,7 +18,7 @@ export class ItemService {
   }
 
   findOne(id: number) {
-    return this.prisma.item.findFirst({
+    return this.prisma.item.findUniqueOrThrow({
       where: { id },
     });
   }

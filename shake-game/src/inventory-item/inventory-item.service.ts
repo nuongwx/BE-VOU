@@ -30,37 +30,49 @@ export class InventoryItemService {
           },
         },
       });
-    } else {
-      // create a random item depending on the game
-
-      const items = await this.prisma.item.findMany({
-        where: {
-          games: {
-            some: {
-              id: user.gameId,
-            },
-          },
-        },
-      });
-
-      const randomItem = items[Math.floor(Math.random() * items.length)];
-
-      return this.prisma.inventoryItem.create({
-        data: {
-          Item: {
-            connect: {
-              id: randomItem.id,
-            },
-          },
-          amount: 1,
-          Inventory: {
-            connect: {
-              id: user.inventoryId,
-            },
-          },
-        },
-      });
     }
+    if (user.lives < 1) {
+      throw new Error('No lives left');
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        lives: user.lives > 0 ? user.lives - 1 : 0,
+      },
+    });
+
+    // create a random item depending on the game
+
+    const items = await this.prisma.item.findMany({
+      where: {
+        games: {
+          some: {
+            id: user.gameId,
+          },
+        },
+      },
+    });
+
+    const randomItem = items[Math.floor(Math.random() * items.length)];
+
+    return this.prisma.inventoryItem.create({
+      data: {
+        Item: {
+          connect: {
+            id: randomItem.id,
+          },
+        },
+        amount: 1,
+        Inventory: {
+          connect: {
+            id: user.inventoryId,
+          },
+        },
+      },
+    });
   }
 
   findAll() {
@@ -68,7 +80,7 @@ export class InventoryItemService {
   }
 
   findOne(id: number) {
-    return this.prisma.inventoryItem.findFirst({
+    return this.prisma.inventoryItem.findUniqueOrThrow({
       where: { id },
     });
   }

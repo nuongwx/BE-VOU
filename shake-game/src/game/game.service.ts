@@ -24,7 +24,7 @@ export class GameService {
   }
 
   findOne(id: number) {
-    return this.prisma.game.findFirst({
+    return this.prisma.game.findUniqueOrThrow({
       where: { id },
     });
   }

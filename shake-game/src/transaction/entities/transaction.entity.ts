@@ -6,8 +6,11 @@ export class Transaction {
   @Field(() => Int, { description: 'Transaction Id' })
   id: number;
 
-  @Field(() => InventoryItem, { description: 'Inventory Item' })
-  inventoryItem: InventoryItem;
+  // @Field(() => InventoryItem, { description: 'Inventory Item' })
+  // inventoryItem: InventoryItem;
+
+  @Field(() => Int, { description: 'Inventory Item Id' })
+  inventoryItemId: number;
 
   @Field(() => Int, { description: 'Quantity' })
   quantity: number;
