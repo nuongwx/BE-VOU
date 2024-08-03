@@ -1,21 +1,26 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthResolver } from './auth.resolver';
-import { PrismaService } from '../prisma/prisma.service';
-import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from '../jwt/jwt.strategy';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { FacebookStrategy } from 'src/auth/facebook/facebook.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
+import { FirebaseAdminService } from 'src/auth/firebase/firebase-admin-service';
 
 @Module({
   imports: [
+    CacheModule.register(),
+    PassportModule.register({ defaultStrategy: 'facebook' }),
     JwtModule.register({
-      secret: 'your_jwt_secret_key', // Use a secure key in production
-      signOptions: { expiresIn: '1h' },
-    }),
-    PassportModule,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '60m' }
+    })
   ],
-  providers: [AuthService, AuthResolver, PrismaService, JwtStrategy],
-  controllers: [AuthController],
+  providers: [AuthResolver, AuthService, JwtService, PrismaService, FacebookStrategy, ConfigService, FirebaseAdminService],
+  exports: [AuthService]  
+
 })
 export class AuthModule {}

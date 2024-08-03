@@ -28,19 +28,15 @@ export class TransactionService {
       throw new Error('Sender and receiver must be different users');
     }
 
-    const senderInventory = await this.prisma.inventory.findFirstOrThrow({
+    const senderInventory = await this.prisma.inventory.findUniqueOrThrow({
       where: {
-        User: {
-          id: sender.id,
-        },
+        id: sender.inventoryId,
       },
     });
 
-    const receiverInventory = await this.prisma.inventory.findFirstOrThrow({
+    const receiverInventory = await this.prisma.inventory.findUniqueOrThrow({
       where: {
-        User: {
-          id: receiver.id,
-        },
+        id: receiver.inventoryId,
       },
     });
 
@@ -49,7 +45,7 @@ export class TransactionService {
     }
 
     // check if the sender has the item
-    const senderItem = await this.prisma.inventoryItem.findFirstOrThrow({
+    const senderItem = await this.prisma.inventoryItem.findUniqueOrThrow({
       where: {
         Inventory: {
           id: senderInventory.id,
@@ -57,6 +53,15 @@ export class TransactionService {
         id: createTransactionInput.itemId,
       },
     });
+
+    // const senderItem = await this.prisma.inventoryItem.findUniqueOrThrow({
+    //   where: {
+    //     Inventory: {
+    //       id: senderInventory.id,
+    //     },
+    //     itemId: createTransactionInput.itemId,
+    //   },
+    // });
 
     if (!senderItem) {
       throw new Error('Sender does not have the item');
@@ -103,7 +108,7 @@ export class TransactionService {
   }
 
   findOne(id: number) {
-    return this.prisma.transaction.findFirst({
+    return this.prisma.transaction.findUniqueOrThrow({
       where: { id },
     });
   }
