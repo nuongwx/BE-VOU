@@ -5,9 +5,9 @@ export class UpdateAnswerInput {
   @Field(() => Int)
   id: number;
 
-  @Field({ nullable: true })
-  content?: string;
+  @Field(() => String, { nullable: true })
+  content: string;
 
-  @Field({ nullable: true })
-  image?: string;
+  @Field(() => String, { nullable: true })
+  image: string;
 }

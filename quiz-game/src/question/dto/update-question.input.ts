@@ -1,21 +1,22 @@
 import { InputType, Field, Int } from '@nestjs/graphql';
+import { UpdateAnswerInput } from '../../answer/dto/update-answer.input';
 
 @InputType()
 export class UpdateQuestionInput {
   @Field(() => Int)
   id: number;
 
-  @Field({ nullable: true })
-  content?: string;
+  @Field(() => [String], { nullable: true })
+  content: string;
 
   @Field(() => [String], { nullable: true })
-  images?: string[];
+  images: string[];
 
-  @Field(() => [String], { nullable: true })
-  answers?: string[];
+  @Field(() => [UpdateAnswerInput], { nullable: true })
+  answers: UpdateAnswerInput[];
 
-  @Field({ nullable: true })
-  correct_answer?: string;
+  @Field(() => Int, { nullable: true })
+  correctAnswerId?: number;
 
   @Field(() => Int, { nullable: true })
   quizGameId?: number;

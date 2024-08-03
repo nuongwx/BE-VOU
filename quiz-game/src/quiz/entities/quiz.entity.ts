@@ -1,26 +1,26 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { QuizGameQuestion } from 'src/question/entities/question.entity';
+import { QuizGameQuestionEntity } from '../../question/entities/question.entity';
 
 @ObjectType()
-export class QuizGame {
-  @Field(() => Int)
+export class QuizGameEntity {
+  @Field(() => Number)
   id: number;
 
-  @Field()
+  @Field(() => String)
   gameName: string;
 
-  @Field()
+  @Field(() => String)
   startTime: Date;
 
-  @Field()
+  @Field(() => String)
   endTime: Date;
 
-  @Field(() => Int)
+  @Field(() => Number)
   playerQuantity: number;
 
-  @Field(() => Int)
+  @Field(() => Number)
   companyId: number;
 
-  // @Field(() => [QuizGameQuestion])
-  // questions: QuizGameQuestion[];
+  @Field(() => [QuizGameQuestionEntity])
+  questions: QuizGameQuestionEntity[];
 }

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -20,21 +14,40 @@ model QuizGame {
   endTime        DateTime
   playerQuantity Int
   companyId      Int
-  questions      QuizGameQuestion[]
+  isDeleted      Boolean   @default(false)
+  questions      QuizGameQuestionToQuizGameMapping[]
 }
 
 model QuizGameQuestion {
-  id             Int        @id @default(autoincrement())
-  content        String
-  images         String[]
-  answers        String[]
-  correct_answer String
-  quizGameId     Int
-  quizGame       QuizGame   @relation(fields: [quizGameId], references: [id])
+  id              Int                                   @id @default(autoincrement())
+  content         String
+  images          String[]
+  answers         QuizGameAnswer[]                      @relation("QuestionAnswers")
+  correctAnswerId Int                                   @unique
+  correctAnswer   QuizGameAnswer                        @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
+  isDeleted       Boolean   @default(false)
+  quizGames       QuizGameQuestionToQuizGameMapping[]
 }
 
 model QuizGameAnswer {
-  id      Int    @id @default(autoincrement())
-  content String
-  image   String?
+  id          Int               @id @default(autoincrement())
+  content     String
+  image       String?
+  questionId  Int?
+  question    QuizGameQuestion? @relation("QuestionAnswers", fields: [questionId], references: [id])
+  correctFor  QuizGameQuestion? @relation("CorrectAnswer")
+  isDeleted   Boolean           @default(false)
+}
+
+
+model QuizGameQuestionToQuizGameMapping {
+  id            Int              @id @default(autoincrement())
+  
+  quizQuestionId Int
+  quizGameId     Int
+
+  quizGame       QuizGame         @relation(fields: [quizGameId], references: [id])
+  quizGameQuestion QuizGameQuestion @relation(fields: [quizQuestionId], references: [id])
+
+  @@unique([quizGameId, quizQuestionId])
 }

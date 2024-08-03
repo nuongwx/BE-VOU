@@ -1,13 +1,13 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
-export class QuizGameAnswer {
-  @Field(() => Int)
+export class QuizGameAnswerEntity {
+  @Field(() => Number)
   id: number;
 
-  @Field()
+  @Field(() => String)
   content: string;
 
-  @Field({ nullable: true })
-  image?: string;
+  @Field(() => String, { nullable: true })
+  image: string;
 }
