@@ -9,6 +9,8 @@ import { AnswerModule } from './answer/answer.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
+import { ProducerModule } from './producer/producer.module';
+import { ConsumerModule } from './consumer/consumer.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { PrismaService } from './prisma/prisma.service';
     QuestionModule,
     AnswerModule,
     PrismaModule,
+    ProducerModule,
+    ConsumerModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
