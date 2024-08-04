@@ -14,10 +14,10 @@ type LogoutResponse {
 type Mutation {
   logOut(id: Int!): LogoutResponse!
   removeAuth(id: Int!): Auth!
+  sendOtpToEmail(email: String!): String!
   signIn(SignInInput: SignInInput!): SignResponse!
   signUp(signUpInput: SignUpInput!): String!
   updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
-  verifyOtp(otpSession: String!, phoneNumber: String!): String!
 }
 
 type Query {
@@ -39,6 +39,7 @@ type SignResponse {
 
 input SignUpInput {
   email: String!
+  otp: String!
   password: String!
   phoneNumber: String!
   userName: String!
@@ -47,6 +48,7 @@ input SignUpInput {
 input UpdateAuthInput {
   email: String
   id: Int!
+  otp: String
   password: String
   phoneNumber: String
   userName: String

@@ -15,17 +15,14 @@ export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
   @Mutation(() => String)
-  async signUp(@Args('signUpInput') signUpInput: SignUpInput) {
-    const { otpSession } = await this.authService.signUp(signUpInput);
-    return otpSession;
+  async sendOtpToEmail(@Args('email') email: string) {
+    return this.authService.sendOtpToEmail(email);
   }
 
   @Mutation(() => String)
-  async verifyOtp(
-    @Args('phoneNumber') phoneNumber: string,
-    @Args('otpSession') otpSession: string,
-  ) {
-    return this.authService.verifyOtp(phoneNumber, otpSession);
+  async signUp(@Args('signUpInput') signUpInput: SignUpInput) {
+    const user = await this.authService.signUp(signUpInput);
+    return `User ${user.userName} registered successfully`;
   }
 
   @Mutation(() => SignResponse)

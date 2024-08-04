@@ -23,4 +23,9 @@ export class SignUpInput {
   @IsString()
   @Field()
   phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Field()
+  otp: string;
 }

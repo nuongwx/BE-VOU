@@ -9,38 +9,84 @@ import { SignInInput } from 'src/auth/dto/signIn-input';
 import { FirebaseAdminService } from 'src/auth/firebase/firebase-admin-service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import * as nodemailer from 'nodemailer';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
+  private transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD,
+    },
+    });
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
     private firebaseAdminService: FirebaseAdminService
-  ) { }
+  ) {}
+
+  async sendOtpToEmail(email: string): Promise<string> {
+    const otp = crypto.randomInt(100000, 999999).toString(); // Tạo OTP 6 chữ số
+
+    const mailOptions = {
+      from: 'your-email@gmail.com',
+      to: email,
+      subject: 'Your OTP Code',
+      text: `Your OTP code is ${otp}`,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      await this.cacheManager.set(email, otp, 300); // OTP có hiệu lực trong 5 phút
+      return 'OTP sent to email successfully';
+    } catch (error) {
+      throw new BadRequestException('Failed to send OTP');
+    }
+  }
+
+  async verifyEmailOtp(email: string, otp: string): Promise<boolean> {
+    const cachedOtp = await this.cacheManager.get(email);
+    if (cachedOtp === otp) {
+      await this.cacheManager.del(email); // Xóa OTP khỏi cache sau khi xác minh thành công
+      return true;
+    }
+    return false;
+  }
 
   async signUp(signUpInput: SignUpInput) {
-    const hashedPassword = await argon.hash(signUpInput.password);
-    const user = await this.prisma.user.create({
-      data: {
-        userName: signUpInput.userName,
-        email: signUpInput.email,
-        hashedPassword: hashedPassword,
-        phoneNumber: signUpInput.phoneNumber,
-        isActive: false,
-        name: "",
-        dateOfBirth: new Date(),
-        sex: "male",
-        OTP_method: "phone",
-        role: "player",
-      },
+    const userExists = await this.prisma.user.findUnique({
+      where: { email: signUpInput.email },
     });
-
-    const otpSession = await this.firebaseAdminService.sendOTP(signUpInput.phoneNumber);
-
-    return { otpSession };
+    if (userExists) {
+      throw new BadRequestException('Email already registered');
+    }
+    
+    if (await this.verifyEmailOtp(signUpInput.email, signUpInput.otp)) {
+      const user = await this.prisma.user.create({
+        data: {
+          userName: signUpInput.userName,
+          email: signUpInput.email,
+          hashedPassword: await argon.hash(signUpInput.password),
+          phoneNumber: signUpInput.phoneNumber,
+          isActive: true,
+          name: "",
+          dateOfBirth: new Date(),
+          sex: "male",
+          OTP_method: "email",
+          role: "player",
+        },
+      });
+      return user;
+    } else {
+      throw new BadRequestException('Invalid OTP');
+    }
   }
+
+  
 
   async verifyOtp(phoneNumber: string, otpSession: string) {
     const isValid = await this.firebaseAdminService.verifyOTP(otpSession);
