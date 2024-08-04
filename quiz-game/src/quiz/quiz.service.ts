@@ -6,33 +6,10 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQuizGameInput } from './dto/create-quiz.input';
 import { UpdateQuizGameInput } from './dto/update-quiz.input';
-import { GrpcMethod } from '@nestjs/microservices';
 
 @Injectable()
 export class QuizGameService {
   constructor(private readonly prisma: PrismaService) {}
-
-  @GrpcMethod('QuizService', 'SubmitAnswer')
-  submitAnswer(data: any): {
-    success: boolean;
-  } {
-    console.log(data);
-
-    return { success: true };
-  }
-
-  @GrpcMethod('QuizService', 'GetQuestion')
-  getQuestion(data: any): {
-    question: string;
-    options: string[];
-  } {
-    console.log(data);
-
-    return {
-      question: 'What is the capital of France?',
-      options: ['Paris', 'London', 'Berlin', 'Madrid'],
-    };
-  }
 
   async create(createQuizGameInput: CreateQuizGameInput) {
     try {
