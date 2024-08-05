@@ -14,24 +14,26 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  name            String
-  userName        String   
-  phoneNumber     String   @unique
-  hashedPassword  String
-  email           String   @unique
-  avatar          String?
-  role            Role
-  isActive        Boolean  @default(true)
-  status          String?
-  facebookAccount String? 
-  OTP             String?
-  OTP_method      OTPMethod
-  dateOfBirth     DateTime
-  sex             Sex
-  hashedRefreshToken String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now())
+  id                   Int       @id @default(autoincrement())
+  name                 String
+  userName             String   
+  phoneNumber          String   @unique
+  hashedPassword       String
+  email                String   @unique
+  avatar               String?
+  role                 Role
+  isActive             Boolean  @default(true)
+  status               String?
+  facebookAccount      String? 
+  OTP                  String?
+  OTP_method           OTPMethod
+  dateOfBirth          DateTime
+  sex                  Sex
+  hashedRefreshToken   String?
+  passwordResetToken   String?   // Token used for resetting password
+  passwordResetExpires DateTime? // Expiration date for the reset token
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @default(now()) @updatedAt
 }
 
 enum Role {

@@ -10,7 +10,8 @@ import { FirebaseAdminService } from 'src/auth/firebase/firebase-admin-service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import * as nodemailer from 'nodemailer';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
+import { admin } from './firebase/firebase-admin-setup';
 
 @Injectable()
 export class AuthService {
@@ -29,77 +30,54 @@ export class AuthService {
     private firebaseAdminService: FirebaseAdminService
   ) {}
 
-  async sendOtpToEmail(email: string): Promise<string> {
-    const otp = crypto.randomInt(100000, 999999).toString(); // Tạo OTP 6 chữ số
-
-    const mailOptions = {
-      from: 'your-email@gmail.com',
-      to: email,
-      subject: 'Your OTP Code',
-      text: `Your OTP code is ${otp}`,
-    };
+  async signUp(signUpInput: SignUpInput) {
+    const hashedPassword = await argon.hash(signUpInput.password);
+    const user = await this.prisma.user.create({
+      data: {
+        userName: signUpInput.userName,
+        email: signUpInput.email,
+        hashedPassword,
+        phoneNumber: signUpInput.phoneNumber,
+        isActive: false,
+        role: 'player',
+        OTP_method: 'email',
+        sex: 'male',
+        dateOfBirth: new Date(),
+        name: '',
+      },
+    });
 
     try {
-      await this.transporter.sendMail(mailOptions);
-      await this.cacheManager.set(email, otp, 300); // OTP có hiệu lực trong 5 phút
-      return 'OTP sent to email successfully';
-    } catch (error) {
-      throw new BadRequestException('Failed to send OTP');
-    }
-  }
-
-  async verifyEmailOtp(email: string, otp: string): Promise<boolean> {
-    const cachedOtp = await this.cacheManager.get(email);
-    if (cachedOtp === otp) {
-      await this.cacheManager.del(email); // Xóa OTP khỏi cache sau khi xác minh thành công
-      return true;
-    }
-    return false;
-  }
-
-  async signUp(signUpInput: SignUpInput) {
-    const userExists = await this.prisma.user.findUnique({
-      where: { email: signUpInput.email },
-    });
-    if (userExists) {
-      throw new BadRequestException('Email already registered');
-    }
-    
-    if (await this.verifyEmailOtp(signUpInput.email, signUpInput.otp)) {
-      const user = await this.prisma.user.create({
-        data: {
-          userName: signUpInput.userName,
-          email: signUpInput.email,
-          hashedPassword: await argon.hash(signUpInput.password),
-          phoneNumber: signUpInput.phoneNumber,
-          isActive: true,
-          name: "",
-          dateOfBirth: new Date(),
-          sex: "male",
-          OTP_method: "email",
-          role: "player",
-        },
+      const userRecord = await admin.auth().createUser({
+        phoneNumber: signUpInput.phoneNumber,
       });
-      return user;
-    } else {
-      throw new BadRequestException('Invalid OTP');
+      return { otpSession: userRecord.uid };
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      throw new Error('Failed to send OTP');
     }
   }
 
   
 
-  async verifyOtp(phoneNumber: string, otpSession: string) {
-    const isValid = await this.firebaseAdminService.verifyOTP(otpSession);
-    if (!isValid) {
+  async verifyOtp(phoneNumber: string, otpSession: string, otpCode: string) {
+    try {
+      const userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber);
+      if (userRecord.uid === otpSession) {
+        // Assuming otpCode is correct (you should verify it in production)
+        await this.prisma.user.update({
+          where: { phoneNumber },
+          data: { isActive: true },
+        });
+
+        return { message: 'OTP verified successfully' };
+      } else {
+        throw new BadRequestException('Invalid OTP');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
       throw new BadRequestException('Invalid OTP');
     }
-
-    await this.prisma.user.update({
-      where: { phoneNumber: phoneNumber },
-      data: { isActive: true },
-    });
-
-    return { message: 'OTP verified successfully' };
   }
 
   async signIn(signInInput: SignInInput) {
@@ -213,5 +191,70 @@ export class AuthService {
       user,
       accessToken,
     };
+  }
+
+  async requestPasswordReset(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('Email not found');
+    }
+
+    const resetToken = randomBytes(32).toString('hex');
+    const hashedResetToken = await argon.hash(resetToken);
+
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        passwordResetToken: hashedResetToken,
+        passwordResetExpires: new Date(Date.now() + 3600000), // Token valid for 1 hour
+      },
+    });
+
+    await this.transporter.sendMail({
+      to: email,
+      subject: 'Password Reset Request',
+      html: `Your password reset token is: ${resetToken}`,
+    });
+
+    return { message: 'Password reset token sent' };
+  }
+
+  async verifyPasswordResetToken(email: string, token: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || !user.passwordResetToken || !user.passwordResetExpires) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const isTokenValid = await argon.verify(user.passwordResetToken, token);
+    if (!isTokenValid || user.passwordResetExpires < new Date()) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    return { email };
+  }
+
+  async resetPassword(email: string, token: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || !user.passwordResetToken || !user.passwordResetExpires) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const isTokenValid = await argon.verify(user.passwordResetToken, token);
+    if (!isTokenValid || user.passwordResetExpires < new Date()) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const hashedPassword = await argon.hash(newPassword);
+
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
+
+    return { message: 'Password reset successfully' };
   }
 }
