@@ -24,8 +24,9 @@ export class AuthResolver {
   async verifyOtp(
     @Args('phoneNumber') phoneNumber: string,
     @Args('otpSession') otpSession: string,
+    @Args('otpCode') otpCode: string,
   ) {
-    return this.authService.verifyOtp(phoneNumber, otpSession);
+    return this.authService.verifyOtp(phoneNumber, otpSession, otpCode);
   }
 
   @Mutation(() => SignResponse)
@@ -63,5 +64,24 @@ export class AuthResolver {
   @UseGuards(AuthGuard('facebook'))
   async facebookAuthCallback(@Context() context) {
     return this.authService.facebookLogin(context);
+  }
+
+  @Mutation(() => String)
+  async requestPasswordReset(@Args('email') email: string) {
+    return this.authService.requestPasswordReset(email);
+  }
+
+  @Query(() => String)
+  async verifyPasswordResetToken(@Args('email') email: string, @Args('token') token: string) {
+    return this.authService.verifyPasswordResetToken(email, token);
+  }
+
+  @Mutation(() => String)
+  async resetPassword(
+    @Args('email') email: string,
+    @Args('token') token: string,
+    @Args('newPassword') newPassword: string,
+  ) {
+    return this.authService.resetPassword(email, token, newPassword);
   }
 }

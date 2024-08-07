@@ -25,6 +25,8 @@ CREATE TABLE "User" (
     "dateOfBirth" TIMESTAMP(3) NOT NULL,
     "sex" "Sex" NOT NULL,
     "hashedRefreshToken" TEXT,
+    "passwordResetToken" TEXT,
+    "passwordResetExpires" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
