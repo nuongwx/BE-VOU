@@ -16,5 +16,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ]),
   ],
   providers: [ProducerService],
+  exports: [ProducerService],
 })
 export class ProducerModule {}

@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { timeout } from 'rxjs';
 
 @Injectable()
 export class ProducerService {
-  constructor(private rabbitClient: ClientProxy) {}
+  constructor(@Inject('QUIZ_SERVICE') private rabbitClient: ClientProxy) {}
 
   // Send message without expecting the response
   emitToQueue<T>(title: string, object: T) {
