@@ -18,6 +18,7 @@ import { ConsumerModule } from './consumer/consumer.module';
       driver: ApolloDriver,
       autoSchemaFile: true,
       playground: false,
+      introspection: true,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     QuizModule,
