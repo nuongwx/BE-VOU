@@ -5,11 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { QuestionGateway } from './question.gateway';
 
 @Module({
-  providers: [
-    QuestionResolver,
-    QuestionService,
-    PrismaService,
-    QuestionGateway,
-  ],
+  imports: [PrismaModule],
+  providers: [QuestionResolver, QuestionService, QuestionGateway],
 })
 export class QuestionModule {}
