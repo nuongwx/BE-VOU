@@ -19,6 +19,7 @@ import { RedisCacheModule } from './redis-cache/redis-cache.module';
       driver: ApolloDriver,
       autoSchemaFile: true,
       playground: false,
+      introspection: true,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     QuizModule,
