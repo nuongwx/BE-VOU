@@ -11,6 +11,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ProducerModule } from './producer/producer.module';
 import { ConsumerModule } from './consumer/consumer.module';
+import { RedisCacheModule } from './redis-cache/redis-cache.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ConsumerModule } from './consumer/consumer.module';
     PrismaModule,
     ProducerModule,
     ConsumerModule,
+    RedisCacheModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
