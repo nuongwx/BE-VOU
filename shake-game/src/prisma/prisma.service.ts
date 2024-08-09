@@ -1,9 +1,10 @@
 import { INestApplication, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaService as NewPrismaService } from './new.prisma.service';
 
 @Injectable()
-export class PrismaService extends PrismaClient {
+export class LegacyPrismaService extends PrismaClient {
   constructor(config: ConfigService) {
     super({
       datasources: {
@@ -35,3 +36,5 @@ export class PrismaService extends PrismaClient {
     });
   }
 }
+
+export { NewPrismaService as PrismaService };

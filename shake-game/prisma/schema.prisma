@@ -26,7 +26,8 @@ model Game {
   // Company   Company?
   company   String[]
 
-  lives Int @default(3)
+  lives     Int     @default(3)
+  isDeleted Boolean @default(false)
 }
 
 model Item {
@@ -39,6 +40,7 @@ model Item {
   InventoryItem InventoryItem[]
   games         Game[]
   Transaction   Transaction[]
+  isDeleted     Boolean         @default(false)
 }
 
 model User {
@@ -54,6 +56,8 @@ model User {
   gameId          Int
   RequestSent     Request[]     @relation("Request Sender")
   RequestReceived Request[]     @relation("Request Receiver")
+  isDeleted       Boolean       @default(false)
+  Redeem          Redeem[]
 }
 
 model Inventory {
@@ -62,6 +66,7 @@ model Inventory {
   updatedAt     DateTime        @updatedAt
   InventoryItem InventoryItem[]
   User          User?
+  isDeleted     Boolean         @default(false)
 }
 
 model InventoryItem {
@@ -74,6 +79,7 @@ model InventoryItem {
   inventoryId  Int
   amount       Int?
   transactions Transaction[]
+  isDeleted    Boolean       @default(false)
 }
 
 model Transaction {
@@ -88,6 +94,7 @@ model Transaction {
   senderId        Int
   Receiver        User          @relation(fields: [receiverId], references: [id], name: "Receiver")
   receiverId      Int
+  isDeleted       Boolean       @default(false)
 }
 
 model Request {
@@ -99,4 +106,14 @@ model Request {
   Receiver   User     @relation(fields: [receiverId], references: [id], name: "Request Receiver")
   receiverId Int
   isAccepted Boolean  @default(false)
+  isDeleted  Boolean  @default(false)
+}
+
+model Redeem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  isDeleted Boolean  @default(false)
 }

@@ -45,7 +45,7 @@ export class TransactionResolver {
 
   @Query(() => [Transaction], { name: 'transactions' })
   findAll() {
-    console.log('New transaction created');
+    // console.log('New transaction created');
     // this.tcp.emit('tcp', { message: 'TCP New transaction created' });
     // this.rmq.emit('rmq', { message: 'RabbitMQ New transaction created' });
     // this.grpcService.sendNotification({ message: 'GRPC New transaction created' }).subscribe((data) => {

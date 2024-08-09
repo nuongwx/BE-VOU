@@ -96,4 +96,13 @@ export class UserResolver {
       },
     });
   }
+
+  @ResolveField('redeems', () => [Request], { description: 'Redeems' })
+  redeems(@Parent() user: User) {
+    return this.prisma.redeem.findMany({
+      where: {
+        userId: user.id,
+      },
+    });
+  }
 }

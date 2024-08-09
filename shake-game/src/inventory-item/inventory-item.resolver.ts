@@ -39,9 +39,9 @@ export class InventoryItemResolver {
     return this.inventoryItemService.remove(id);
   }
 
-  @ResolveField('inventory', () => [Inventory], { description: 'Inventory' })
+  @ResolveField('inventory', () => Inventory, { description: 'Inventory' })
   inventory(@Parent() inventoryItem: InventoryItem) {
-    return this.prisma.inventory.findMany({
+    return this.prisma.inventory.findFirstOrThrow({
       where: {
         InventoryItem: {
           some: {

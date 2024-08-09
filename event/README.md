@@ -45,19 +45,6 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Funnies
-
-```bash
-# swagger
-http://localhost:3000/api/
-
-# prisma studio
-http://localhost:5555/
-
-# graphql playground
-http://localhost:3000/graphql
-```
-
 ## Test
 
 ```bash
@@ -84,16 +71,3 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
-
-## Apollo Server Cache Configuration
-
-### Why Redis?
-
-```typescript
-import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
-
-const server = new ApolloServer({
-  // ...other options...
-  plugins: [ApolloServerPluginCacheControl({ defaultMaxAge: 60 })], // 60 seconds
-});
-```

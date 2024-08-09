@@ -1,24 +1,19 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EventModule } from './event/event.module';
+import { FavouriteModule } from './favourite/favourite.module';
+import { PostModule } from './post/post.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { PrismaModule } from './prisma/prisma.module';
-import { GameModule } from './game/game.module';
-import { ItemModule } from './item/item.module';
-import { InventoryItemModule } from './inventory-item/inventory-item.module';
-import { InventoryModule } from './inventory/inventory.module';
-import { TransactionModule } from './transaction/transaction.module';
-import { UserModule } from './user/user.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
-import { RequestModule } from './request/request.module';
 import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
 import responseCachePlugin from '@apollo/server-plugin-response-cache';
-import Keyv from 'keyv';
-import KeyvRedis from '@keyv/redis';
 import { KeyvAdapter } from '@apollo/utils.keyvadapter';
-import { RedeemModule } from './redeem/redeem.module';
+import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
+import Keyv from 'keyv';
+import { PrismaModule } from './prisma/prisma.module';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
@@ -39,18 +34,15 @@ import { RedeemModule } from './redeem/redeem.module';
         ],
         cache: new KeyvAdapter(new Keyv({ store: new KeyvRedis(configService.get('REDIS_URL')) })),
         introspection: true,
+        csrfPrevention: false,
       }),
       inject: [ConfigService],
     }),
     PrismaModule,
-    GameModule,
-    ItemModule,
-    InventoryItemModule,
-    InventoryModule,
-    TransactionModule,
-    UserModule,
-    RequestModule,
-    RedeemModule,
+    EventModule,
+    FavouriteModule,
+    PostModule,
+    // UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
