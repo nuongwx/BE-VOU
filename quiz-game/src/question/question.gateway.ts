@@ -20,9 +20,19 @@ export class QuestionGateway {
 
   @SubscribeMessage('submitAnswer')
   async handleSubmitAnswer(
-    @MessageBody() data: { questionId: number; answerId: number },
+    @MessageBody()
+    data: { questionId: number; answerId: number; questionShownTime: number },
     client: Socket,
   ) {
+    const currentTime = Date.now();
+    const elapsedTime = (currentTime - data.questionShownTime) / 1000;
+
+    // Check is valid in 5s or not
+    if (elapsedTime > 5) {
+      client.emit('answerTimeout', { message: 'Time limit exceeded' });
+      return;
+    }
+
     const isCorrect = await this.questionService.checkAnswer(data.questionId, {
       id: data.answerId,
     } as any);
@@ -32,6 +42,7 @@ export class QuestionGateway {
       questionId: data.questionId,
       answerId: data.answerId,
       isCorrect,
+      elapsedTime,
     });
   }
 
