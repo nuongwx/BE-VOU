@@ -14,26 +14,27 @@ datasource db {
 }
 
 model User {
-  id                   Int       @id @default(autoincrement())
-  name                 String
-  userName             String   
-  phoneNumber          String   @unique
-  hashedPassword       String
-  email                String   @unique
+  id                   Int        @id @default(autoincrement())
+  name                 String?
+  userName             String?
+  phoneNumber          String?    @unique
+  hashedPassword       String?
+  email                String     @unique
   avatar               String?
-  role                 Role
-  isActive             Boolean  @default(true)
+  role                 Role       @default(player)
+  isActive             Boolean    @default(true)
   status               String?
-  facebookAccount      String? 
+  facebookAccount      String?
   OTP                  String?
-  OTP_method           OTPMethod
-  dateOfBirth          DateTime
-  sex                  Sex
+  OTP_method           OTPMethod?
+  dateOfBirth          DateTime?
+  sex                  Sex?
   hashedRefreshToken   String?
-  passwordResetToken   String?   // Token used for resetting password
+  passwordResetToken   String? // Token used for resetting password
   passwordResetExpires DateTime? // Expiration date for the reset token
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @default(now()) @updatedAt
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @default(now()) @updatedAt
+  firebaseUID          String?
 }
 
 enum Role {
