@@ -10,7 +10,7 @@ export class SignInInput {
 
     @IsNotEmpty()
     @IsString()
-    @MinLength(6)
+    // @MinLength(6)
     @Field()
     password: string;
 }

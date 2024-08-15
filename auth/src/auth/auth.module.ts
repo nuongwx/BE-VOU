@@ -16,11 +16,17 @@ import { FirebaseAdminService } from 'src/auth/firebase/firebase-admin-service';
     PassportModule.register({ defaultStrategy: 'facebook' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '60m' }
-    })
+      signOptions: { expiresIn: '60m' },
+    }),
   ],
-  providers: [AuthResolver, AuthService, JwtService, PrismaService, FacebookStrategy, ConfigService, FirebaseAdminService],
-  exports: [AuthService]  
-
+  providers: [
+    AuthResolver,
+    AuthService,
+    JwtService,
+    FacebookStrategy,
+    ConfigService,
+    FirebaseAdminService,
+  ],
+  exports: [AuthService],
 })
 export class AuthModule {}
