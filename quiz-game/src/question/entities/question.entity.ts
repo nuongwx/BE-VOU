@@ -1,4 +1,5 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
+import { QuizGameAnswerEntity } from 'src/answer/entities/answer.entity';
 
 @ObjectType()
 export class QuizGameQuestionEntity {
@@ -11,8 +12,8 @@ export class QuizGameQuestionEntity {
   @Field(() => [String], { nullable: true })
   images?: string[];
 
-  @Field(() => [String])
-  answers: string[];
+  @Field(() => [QuizGameAnswerEntity])
+  answers: QuizGameAnswerEntity[];
 
   @Field(() => Number)
   correctAnswerId: number;
