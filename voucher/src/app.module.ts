@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
 import { VoucherModule } from './voucher/voucher.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { VoucherModule } from './voucher/voucher.module';
       driver: ApolloDriver,
       autoSchemaFile: true,
     }),
+    PrismaModule,
     VoucherModule,
   ],
   controllers: [AppController],
