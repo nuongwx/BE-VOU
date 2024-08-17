@@ -2,11 +2,11 @@ import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { Role, OTPMethod, Sex } from '@prisma/client';
 registerEnumType(Role, { name: 'Role' });
 registerEnumType(OTPMethod, { name: 'OTPMethod' });
-registerEnumType(Sex, { name: 'Sex'});
+registerEnumType(Sex, { name: 'Sex' });
 
 @ObjectType()
 export class User {
-  @Field(type => Int)
+  @Field(() => Int)
   id: number;
 
   @Field()
@@ -24,7 +24,7 @@ export class User {
   @Field({ nullable: true })
   avatar?: string;
 
-  @Field(type => Role)
+  @Field(() => Role)
   role: Role;
 
   @Field()
@@ -39,23 +39,23 @@ export class User {
   @Field({ nullable: true })
   OTP?: string;
 
-  @Field(type => OTPMethod)
+  @Field(() => OTPMethod)
   OTP_method: OTPMethod;
 
   @Field()
   dateOfBirth: Date;
 
-  @Field(type => Sex)
+  @Field(() => Sex)
   sex: Sex;
 
-  @Field({ nullable: true })
-  hashedRefreshToken?: string;
+  // @Field({ nullable: true })
+  // hashedRefreshToken?: string;
 
-  @Field({ nullable: true })
-  passwordResetToken?: string;
+  // @Field({ nullable: true })
+  // passwordResetToken?: string;
 
-  @Field({ nullable: true })
-  passwordResetExpires?: Date;
+  // @Field({ nullable: true })
+  // passwordResetExpires?: Date;
 
   @Field()
   createdAt: Date;

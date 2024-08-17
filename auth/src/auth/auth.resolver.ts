@@ -8,25 +8,26 @@ import { SignInInput } from 'src/auth/dto/signIn-input';
 import { LogoutResponse } from 'src/auth/dto/logout-response';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-
+import { UserEntity } from 'src/user/user.entity';
+import { JwtAuthGuard, JwtRefreshGuard } from 'src/jwt/jwt.strategy';
 
 @Resolver(() => Auth)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  @Mutation(() => String)
+  @Mutation(() => SignResponse)
   async signUp(@Args('signUpInput') signUpInput: SignUpInput) {
-    const { otpSession } = await this.authService.signUp(signUpInput);
-    return otpSession;
+    // const { otpSession } = await this.authService.signUp(signUpInput);
+    // return otpSession;
+    return this.authService.signUp(signUpInput);
   }
 
-  @Mutation(() => String)
-  async verifyOtp(
+  @Mutation(() => UserEntity)
+  async verify(
     @Args('phoneNumber') phoneNumber: string,
-    @Args('otpSession') otpSession: string,
-    @Args('otpCode') otpCode: string,
+    @Args('userId', { type: () => Int }) userId: number,
   ) {
-    return this.authService.verifyOtp(phoneNumber, otpSession, otpCode);
+    return this.authService.verifyPhone(phoneNumber, userId);
   }
 
   @Mutation(() => SignResponse)
@@ -34,24 +35,25 @@ export class AuthResolver {
     return this.authService.signIn(signInInput);
   }
 
-  @Query(() => Auth, { name: 'auth' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.authService.findOne(id);
-  }
+  //   @Query(() => Auth, { name: 'auth' })
+  //   findOne(@Args('id', { type: () => Int }) id: number) {
+  //     return this.authService.findOne(id);
+  //   }
 
-  @Mutation(() => Auth)
-  updateAuth(@Args('updateAuthInput') updateAuthInput: UpdateAuthInput) {
-    return this.authService.update(updateAuthInput.id, updateAuthInput);
-  }
+  //   @Mutation(() => Auth)
+  //   updateAuth(@Args('updateAuthInput') updateAuthInput: UpdateAuthInput) {
+  //     return this.authService.update(updateAuthInput.id, updateAuthInput);
+  //   }
 
-  @Mutation(() => Auth)
-  removeAuth(@Args('id', { type: () => Int }) id: number) {
-    return this.authService.remove(id);
-  }
+  //   @Mutation(() => Auth)
+  //   removeAuth(@Args('id', { type: () => Int }) id: number) {
+  //     return this.authService.remove(id);
+  //   }
 
   @Mutation(() => LogoutResponse)
-  logOut(@Args('id', { type: () => Int }) id: number) {
-    return this.authService.logOut(id);
+  @UseGuards(JwtAuthGuard)
+  logOut(@Context() context: any) {
+    return this.authService.logOut(context.req.user.id);
   }
 
   @Query(() => String)
@@ -72,7 +74,10 @@ export class AuthResolver {
   }
 
   @Query(() => String)
-  async verifyPasswordResetToken(@Args('email') email: string, @Args('token') token: string) {
+  async verifyPasswordResetToken(
+    @Args('email') email: string,
+    @Args('token') token: string,
+  ) {
     return this.authService.verifyPasswordResetToken(email, token);
   }
 
@@ -83,5 +88,16 @@ export class AuthResolver {
     @Args('newPassword') newPassword: string,
   ) {
     return this.authService.resetPassword(email, token, newPassword);
+  }
+
+  @Mutation(() => SignResponse)
+  @UseGuards(JwtRefreshGuard)
+  async refreshToken(@Context() context: any) {
+    console.log('Context', context.req.user);
+    const user = context.req.user;
+    return this.authService.updateRefreshToken(
+      user.accessToken,
+      user.refreshToken,
+    );
   }
 }

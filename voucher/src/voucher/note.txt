@@ -1,0 +1,5 @@
+voucher status:
+
+valid: chưa dùng, chưa hết thời gian 
+invalid: đã expired
+used: đã dùng
