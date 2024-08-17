@@ -1,14 +1,17 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 import { QuizGameService } from './quiz.service';
 import { CreateQuizGameInput } from './dto/create-quiz.input';
 import { UpdateQuizGameInput } from './dto/update-quiz.input';
 import { QuizGameEntity } from './entities/quiz.entity';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Resolver(() => QuizGameEntity)
 export class QuizGameResolver {
   constructor(private readonly quizGameService: QuizGameService) {}
 
   @Mutation(() => QuizGameEntity)
+  // @UseGuards(JwtAuthGuard)
   createQuizGame(
     @Args('createQuizGameInput') createQuizGameInput: CreateQuizGameInput,
   ) {
@@ -16,16 +19,19 @@ export class QuizGameResolver {
   }
 
   @Query(() => [QuizGameEntity], { name: 'quizGames' })
+  // @UseGuards(JwtAuthGuard)
   findAll() {
     return this.quizGameService.findAll();
   }
 
   @Query(() => QuizGameEntity, { name: 'quizGame' })
+  // @UseGuards(JwtAuthGuard)
   findOne(@Args('id', { type: () => Int }) id: number) {
     return this.quizGameService.findOne(id);
   }
 
   @Mutation(() => QuizGameEntity)
+  // @UseGuards(JwtAuthGuard)
   updateQuizGame(
     @Args('updateQuizGameInput') updateQuizGameInput: UpdateQuizGameInput,
   ) {
@@ -36,11 +42,13 @@ export class QuizGameResolver {
   }
 
   @Mutation(() => QuizGameEntity)
+  // @UseGuards(JwtAuthGuard)
   removeQuizGame(@Args('id', { type: () => Int }) id: number) {
     return this.quizGameService.remove(id);
   }
 
   @Mutation(() => Boolean)
+  // @UseGuards(JwtAuthGuard)
   assignQuestionsToQuizGame(
     @Args('quizGameId', { type: () => Int }) quizGameId: number,
     @Args('questionIds', { type: () => [Int] }) questionIds: number[],
@@ -52,6 +60,7 @@ export class QuizGameResolver {
   }
 
   @Mutation(() => Boolean)
+  // @UseGuards(JwtAuthGuard)
   removeQuestionFromQuizGame(
     @Args('quizGameId', { type: () => Int }) quizGameId: number,
     @Args('questionId', { type: () => Int }) questionId: number,

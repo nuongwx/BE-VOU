@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ProducerService } from './producer.service';
+import { AuthService } from './auth.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
@@ -10,12 +10,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         transport: Transport.RMQ,
         options: {
           urls: ['amqp://localhost:5672'],
-          queue: 'quiz-queue',
+          queue: 'auth_queue',
         },
       },
     ]),
   ],
-  providers: [ProducerService],
-  exports: [ProducerService],
+  controllers: [],
+  providers: [AuthService],
 })
-export class ProducerModule {}
+export class AuthModule {}
