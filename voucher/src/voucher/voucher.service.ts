@@ -14,13 +14,14 @@ export class VoucherService {
 
   async create(createVoucherInput: CreateVoucherInput) {
     try {
-      return await this.prisma.voucher.create({
-        data: {
-          ...createVoucherInput,
-        },
-      });
+      console.log('Starting voucher creation with data:', createVoucherInput);
+      const result = await this.prisma.voucher.create({
+        data: createVoucherInput,
+      }); // Example operation
+      console.log('Voucher creation result:', result);
+      return result;
     } catch (error) {
-      throw new InternalServerErrorException('Error creating voucher');
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -97,7 +98,7 @@ export class VoucherService {
   async findAllVoucherExpired() {
     try {
       return await this.prisma.voucher.findMany({
-        where: { 
+        where: {
           status: { equals: VoucherStatus.INVALID },
         },
       });
