@@ -4,7 +4,7 @@ import { QuizGameQuestionEntity } from './entities/question.entity';
 import { CreateQuestionInput } from './dto/create-question.input';
 import { UpdateQuestionInput } from './dto/update-question.input';
 import GraphQLJSON from 'graphql-type-json';
-import { QuizGameAnswerEntity } from 'src/answer/entities/answer.entity';
+import { QuizGameAnswerEntity } from '../answer/entities/answer.entity';
 
 @Resolver(() => QuizGameQuestionEntity)
 export class QuestionResolver {

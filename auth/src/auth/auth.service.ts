@@ -5,7 +5,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { SignUpInput } from './dto/signUp-input';
-import { UpdateAuthInput } from './dto/update-auth.input';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -17,7 +16,6 @@ import { Cache } from 'cache-manager';
 import * as nodemailer from 'nodemailer';
 import { randomBytes } from 'crypto';
 import { admin } from './firebase/firebase-admin-setup';
-import { auth } from 'firebase-admin';
 
 @Injectable()
 export class AuthService {
@@ -325,5 +323,14 @@ export class AuthService {
     });
 
     return { message: 'Password reset successfully' };
+  }
+
+  async validateToken(token: string) {
+    try {
+      const user = this.jwtService.verify(token);
+      return { user, valid: true };
+    } catch (error) {
+      return { valid: false };
+    }
   }
 }
