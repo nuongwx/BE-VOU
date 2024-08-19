@@ -113,10 +113,13 @@ export class QuestionService {
   }
 
   async remove(id: number) {
-    return await this.prisma.quizGameQuestion.update({
+    const result = await this.prisma.quizGameQuestion.update({
       where: { id },
       data: { isDeleted: true },
+      select: { answers: true },
     });
+
+    return result;
   }
 
   async generateRandomQuestions(length: number) {
