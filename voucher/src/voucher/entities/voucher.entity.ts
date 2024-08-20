@@ -17,8 +17,8 @@ export class Voucher {
   @Field(() => Int)
   value: number;
 
-  @Field(() => Int, { nullable: true })
-  userId: number;
+  @Field(() => [Int])
+  brandId: [number];
 
   @Field(() => [String], { nullable: true })
   image?: [string];
@@ -28,4 +28,22 @@ export class Voucher {
 
   @Field(() => Date, { nullable: true })
   endTime: Date;
+}
+
+@ObjectType()
+export class VoucherLine {
+  @Field(() => Int)
+  id: number;
+
+  @Field(() => Int)
+  voucherId: number;
+
+  @Field(() => String)
+  userId: string;
+
+  @Field(() => String, { nullable: true })
+  qr_code: string;
+
+  @Field(() => [String], { nullable: true })
+  image?: [string];
 }

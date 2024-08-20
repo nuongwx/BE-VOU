@@ -3,20 +3,20 @@ import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 
 @InputType()
 export class UpdateVoucherInput extends PartialType(CreateVoucherInput) {
-  @Field(() => String, { nullable: true })
-  name: string;
+  @Field(() => Int, { nullable: true })
+  id: number;
 
-  @Field(() => String, { nullable: true })
-  qr_code: string;
+  @Field(() => String)
+  name: string;
 
   @Field(() => String, { nullable: true })
   description: string;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Int)
   value: number;
 
-  @Field(() => Int, { nullable: true })
-  userId: number;
+  @Field(() => [Int], { nullable: true })
+  brandId: [number];
 
   @Field(() => [String], { nullable: true })
   image?: [string];
