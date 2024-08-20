@@ -13,23 +13,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum  VoucherStatus {
+enum VoucherStatus {
   VALID
   INVALID
   USED
 }
 
 model Voucher {
-  id          Int               @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   name        String
-  qr_code     String
   images      String[]
   value       Float
   description String
-  userId      Int
-  status      VoucherStatus     @default(VALID)
+  brandId     Int[]
+  status      VoucherStatus @default(VALID)
   startTime   DateTime
-  endTime     DateTime          
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt
+  endTime     DateTime
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now()) @updatedAt
+  voucherLine voucherLine[]
+}
+
+model voucherLine {
+  id        Int           @id @default(autoincrement())
+  voucherId Int
+  userId    Int
+  qr_code   String
+  status    VoucherStatus @default(VALID)
+  voucher   Voucher       @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
 }
