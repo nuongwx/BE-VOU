@@ -1,0 +1,52 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/@prisma-quiz-db/client"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("QUIZ_DATABASE_URL")
+}
+
+model QuizGame {
+  id                                Int                                 @id @default(autoincrement())
+  gameName                          String
+  startTime                         DateTime
+  endTime                           DateTime
+  playerQuantity                    Int
+  companyId                         Int
+  isDeleted                         Boolean                             @default(false)
+  QuizGameQuestionToQuizGameMapping QuizGameQuestionToQuizGameMapping[]
+}
+
+model QuizGameAnswer {
+  id                                                                Int               @id @default(autoincrement())
+  content                                                           String
+  image                                                             String?
+  questionId                                                        Int?
+  isDeleted                                                         Boolean           @default(false)
+  QuizGameQuestion_QuizGameAnswer_questionIdToQuizGameQuestion      QuizGameQuestion? @relation("QuizGameAnswer_questionIdToQuizGameQuestion", fields: [questionId], references: [id])
+  QuizGameQuestion_QuizGameQuestion_correctAnswerIdToQuizGameAnswer QuizGameQuestion? @relation("QuizGameQuestion_correctAnswerIdToQuizGameAnswer")
+}
+
+model QuizGameQuestion {
+  id                                                              Int                                 @id @default(autoincrement())
+  content                                                         String
+  images                                                          String[]
+  correctAnswerId                                                 Int                                 @unique
+  isDeleted                                                       Boolean                             @default(false)
+  QuizGameAnswer_QuizGameAnswer_questionIdToQuizGameQuestion      QuizGameAnswer[]                    @relation("QuizGameAnswer_questionIdToQuizGameQuestion")
+  QuizGameAnswer_QuizGameQuestion_correctAnswerIdToQuizGameAnswer QuizGameAnswer                      @relation("QuizGameQuestion_correctAnswerIdToQuizGameAnswer", fields: [correctAnswerId], references: [id])
+  QuizGameQuestionToQuizGameMapping                               QuizGameQuestionToQuizGameMapping[]
+}
+
+model QuizGameQuestionToQuizGameMapping {
+  id               Int              @id @default(autoincrement())
+  quizQuestionId   Int
+  quizGameId       Int
+  QuizGame         QuizGame         @relation(fields: [quizGameId], references: [id])
+  QuizGameQuestion QuizGameQuestion @relation(fields: [quizQuestionId], references: [id])
+
+  @@unique([quizGameId, quizQuestionId])
+}

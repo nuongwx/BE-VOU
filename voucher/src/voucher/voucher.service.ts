@@ -14,9 +14,37 @@ export class VoucherService {
 
   async create(createVoucherInput: CreateVoucherInput) {
     try {
-      return await this.prisma.voucher.create({
+      const result = await this.prisma.voucher.create({
+        data: createVoucherInput,
+      });
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Error creating voucher');
+    }
+  }
+
+  async addVoucherToUser(voucherId: number, userId: number, qr_code: string) {
+    try {
+      const voucher = await this.prisma.voucher.findUnique({
+        where: { id: voucherId },
+      });
+
+      // find user here
+      const user = true;
+
+      if (!voucher || !user) {
+        throw new NotFoundException('Invalid input');
+      }
+
+      return await this.prisma.voucherLine.create({
         data: {
-          ...createVoucherInput,
+          voucher: {
+            connect: {
+              id: voucher.id,
+            },
+          },
+          qr_code: qr_code,
+          userId: userId,
         },
       });
     } catch (error) {
@@ -73,7 +101,7 @@ export class VoucherService {
     }
   }
 
-  async remove(id: number) {
+  async removeVoucher(id: number) {
     try {
       const existingvoucher = await this.prisma.voucher.findUnique({
         where: { id: id },
@@ -94,10 +122,38 @@ export class VoucherService {
     }
   }
 
+  async removeVoucherFromUser(voucherId: number, userId: number) {
+    {
+      try {
+        const voucherLine = await this.prisma.voucherLine.findFirst({
+          where: {
+            userId: userId,
+            voucherId: voucherId,
+          },
+        });
+
+        if (!voucherLine) {
+          throw new NotFoundException('Voucher not found');
+        }
+
+        return await this.prisma.voucherLine.delete({
+          where: {
+            id: voucherLine.id,
+          },
+        });
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          throw error;
+        }
+        throw new InternalServerErrorException('Error deleting voucher');
+      }
+    }
+  }
+
   async findAllVoucherExpired() {
     try {
       return await this.prisma.voucher.findMany({
-        where: { 
+        where: {
           status: { equals: VoucherStatus.INVALID },
         },
       });
@@ -108,7 +164,7 @@ export class VoucherService {
 
   async findVoucherByUser(userId: number) {
     try {
-      return await this.prisma.voucher.findMany({
+      return await this.prisma.voucherLine.findMany({
         where: {
           userId: { equals: userId },
         },
@@ -120,7 +176,7 @@ export class VoucherService {
 
   async findVoucherUsedByUser(userId: number) {
     try {
-      return await this.prisma.voucher.findMany({
+      return await this.prisma.voucherLine.findMany({
         where: {
           userId: { equals: userId },
           status: { equals: VoucherStatus.USED },
@@ -133,7 +189,7 @@ export class VoucherService {
 
   async findVoucherExpiredByUser(userId: number) {
     try {
-      return await this.prisma.voucher.findMany({
+      return await this.prisma.voucherLine.findMany({
         where: {
           userId: { equals: userId },
           status: { equals: VoucherStatus.INVALID },

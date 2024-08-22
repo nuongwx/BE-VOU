@@ -1,0 +1,113 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/@prisma-shake-db/client"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("SHAKE_DATABASE_URL")
+}
+
+model Game {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  company   String[]
+  lives     Int      @default(3)
+  isDeleted Boolean  @default(false)
+  User      User[]
+  Item      Item[]   @relation("GameToItem")
+}
+
+model Inventory {
+  id            Int             @id @default(autoincrement())
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  isDeleted     Boolean         @default(false)
+  InventoryItem InventoryItem[]
+  User          User?
+}
+
+model InventoryItem {
+  id          Int           @id @default(autoincrement())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  itemId      Int
+  inventoryId Int
+  amount      Int?
+  isDeleted   Boolean       @default(false)
+  Inventory   Inventory     @relation(fields: [inventoryId], references: [id])
+  Item        Item          @relation(fields: [itemId], references: [id])
+  Transaction Transaction[]
+}
+
+model Item {
+  id            Int             @id @default(autoincrement())
+  name          String
+  image         String          @default("https://dummyimage.com/96x96/000/fff&text=Item")
+  description   String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  isDeleted     Boolean         @default(false)
+  InventoryItem InventoryItem[]
+  Transaction   Transaction[]
+  Game          Game[]          @relation("GameToItem")
+}
+
+model Redeem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  userId    Int
+  isDeleted Boolean  @default(false)
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model Request {
+  id                            Int      @id @default(autoincrement())
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime
+  senderId                      Int
+  receiverId                    Int
+  isAccepted                    Boolean  @default(false)
+  isDeleted                     Boolean  @default(false)
+  User_Request_receiverIdToUser User     @relation("Request_receiverIdToUser", fields: [receiverId], references: [id])
+  User_Request_senderIdToUser   User     @relation("Request_senderIdToUser", fields: [senderId], references: [id])
+}
+
+model Transaction {
+  id                                Int           @id @default(autoincrement())
+  createdAt                         DateTime      @default(now())
+  updatedAt                         DateTime
+  inventoryItemId                   Int
+  itemId                            Int?
+  senderId                          Int
+  receiverId                        Int
+  isDeleted                         Boolean       @default(false)
+  InventoryItem                     InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  Item                              Item?         @relation(fields: [itemId], references: [id])
+  User_Transaction_receiverIdToUser User          @relation("Transaction_receiverIdToUser", fields: [receiverId], references: [id])
+  User_Transaction_senderIdToUser   User          @relation("Transaction_senderIdToUser", fields: [senderId], references: [id])
+}
+
+model User {
+  id                                       Int           @id @default(autoincrement())
+  createdAt                                DateTime      @default(now())
+  updatedAt                                DateTime
+  lives                                    Int           @default(3)
+  inventoryId                              Int           @unique
+  gameId                                   Int
+  isDeleted                                Boolean       @default(false)
+  authUserId                               Int           @default(autoincrement())
+  Redeem                                   Redeem[]
+  Request_Request_receiverIdToUser         Request[]     @relation("Request_receiverIdToUser")
+  Request_Request_senderIdToUser           Request[]     @relation("Request_senderIdToUser")
+  Transaction_Transaction_receiverIdToUser Transaction[] @relation("Transaction_receiverIdToUser")
+  Transaction_Transaction_senderIdToUser   Transaction[] @relation("Transaction_senderIdToUser")
+  Game                                     Game          @relation(fields: [gameId], references: [id])
+  Inventory                                Inventory     @relation(fields: [inventoryId], references: [id])
+
+  @@unique([gameId, authUserId])
+}
