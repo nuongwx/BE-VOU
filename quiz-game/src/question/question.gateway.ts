@@ -22,11 +22,19 @@ export class QuestionGateway {
   @SubscribeMessage('submitAnswer')
   async handleSubmitAnswer(
     @MessageBody()
-    data: { questionId: number; answerId: number; questionShownTime: number },
+    data: { questionId: number; answerId: number; questionShownTime: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const currentTime = Date.now();
-    const elapsedTime = (currentTime - data.questionShownTime) / 1000;
+    const currentTime = new Date();
+    const questionShownTime = new Date(data.questionShownTime);
+
+    if (isNaN(questionShownTime.getTime())) {
+      client.emit('error', { message: 'Invalid questionShownTime format' });
+      return;
+    }
+
+    const elapsedTime =
+      (currentTime.getTime() - questionShownTime.getTime()) / 1000;
 
     // Check if answer submission is within the 5-second window
     if (elapsedTime > 5) {
