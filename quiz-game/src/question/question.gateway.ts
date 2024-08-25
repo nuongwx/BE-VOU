@@ -3,6 +3,7 @@ import {
   WebSocketServer,
   SubscribeMessage,
   MessageBody,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { QuestionService } from './question.service';
@@ -22,12 +23,12 @@ export class QuestionGateway {
   async handleSubmitAnswer(
     @MessageBody()
     data: { questionId: number; answerId: number; questionShownTime: number },
-    client: Socket,
+    @ConnectedSocket() client: Socket,
   ) {
     const currentTime = Date.now();
     const elapsedTime = (currentTime - data.questionShownTime) / 1000;
 
-    // Check is valid in 5s or not
+    // Check if answer submission is within the 5-second window
     if (elapsedTime > 5) {
       client.emit('answerTimeout', { message: 'Time limit exceeded' });
       return;
@@ -46,15 +47,10 @@ export class QuestionGateway {
     });
   }
 
-  async broadcastNewQuestion(questionId: number) {
-    const question = await this.questionService.findOne(questionId);
-    this.server.emit('newQuestion', question);
-  }
-
   @SubscribeMessage('generateRandomQuestions')
   async handleGenerateRandomQuestions(
     @MessageBody() data: { length: number },
-    client: Socket,
+    @ConnectedSocket() client: Socket,
   ) {
     try {
       const questions = await this.questionService.generateRandomQuestions(
@@ -64,5 +60,11 @@ export class QuestionGateway {
     } catch (error) {
       client.emit('error', { message: error.message });
     }
+  }
+
+  // Function to broadcast a new question to all clients
+  async broadcastNewQuestion(questionId: number) {
+    const question = await this.questionService.findOne(questionId);
+    this.server.emit('newQuestion', question);
   }
 }
