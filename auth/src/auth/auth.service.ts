@@ -37,28 +37,22 @@ export class AuthService {
   async signUp(signUpInput: SignUpInput) {
     const hashedPassword = await argon.hash(signUpInput.password);
 
-    if (
-      await this.prisma.user.findUnique({ where: { email: signUpInput.email } })
-    ) {
-      throw new BadRequestException('Email already exists');
-    }
-
     // await admin.auth().createUser({
     //     email: signUpInput.email,
     //     password: signUpInput.password,
     // });
+    const userExists = await this.prisma.user.findUnique({ where: { email: signUpInput.email } });
+    if (userExists) {
+      throw new BadRequestException('Email already exists');
+    }
 
+    const userRole = signUpInput.role === 'staff' ? 'staff' : 'player';
     const user = await this.prisma.user.create({
       data: {
-        // userName: signUpInput.userName,
         email: signUpInput.email,
         hashedPassword,
-        // phoneNumber: signUpInput.phoneNumber,
+        role: userRole,
         isActive: false,
-        // role: 'player',
-        // OTP_method: 'email',
-        // sex: 'male',
-        // dateOfBirth: new Date(),
         name: '',
       },
     });
