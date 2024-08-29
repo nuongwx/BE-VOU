@@ -24,4 +24,7 @@ export class Event {
 
   @Field(() => EventStatus, { description: 'Event Status' })
   status: EventStatus;
+
+  @Field(() => String, { description: 'Event Image URL' })
+  imageUrl: string;
 }
