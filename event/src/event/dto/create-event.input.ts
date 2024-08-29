@@ -38,4 +38,7 @@ export class CreateEventInput {
 
   @Field(() => EventStatus, { description: 'Event Status', defaultValue: EventStatus.INACTIVE })
   status: EventStatus;
+
+  @Field(() => String, { description: 'Event Image URL', defaultValue: 'https://via.placeholder.com/150' })
+  imageUrl: string;
 }
