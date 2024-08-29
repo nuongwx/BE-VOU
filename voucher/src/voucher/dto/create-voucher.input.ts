@@ -9,16 +9,13 @@ export class CreateVoucherInput {
   name: string;
 
   @Field(() => String, { nullable: true })
-  qr_code: string;
-
-  @Field(() => String, { nullable: true })
   description: string;
 
   @Field(() => Int)
   value: number;
 
-  @Field(() => Int, { nullable: true })
-  userId: number;
+  @Field(() => [Int], { nullable: true })
+  brandId: [number];
 
   @Field(() => [String], { nullable: true })
   image?: [string];

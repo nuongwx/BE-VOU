@@ -23,8 +23,8 @@ model QuizGameQuestion {
   content         String
   images          String[]
   answers         QuizGameAnswer[]                      @relation("QuestionAnswers")
-  correctAnswerId Int                                   @unique
-  correctAnswer   QuizGameAnswer                        @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
+  correctAnswerId Int?                                  @unique
+  correctAnswer   QuizGameAnswer?                       @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
   isDeleted       Boolean   @default(false)
   quizGames       QuizGameQuestionToQuizGameMapping[]
 }

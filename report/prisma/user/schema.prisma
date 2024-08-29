@@ -1,0 +1,51 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/@prisma-user-db/client"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("USER_DATABASE_URL")
+}
+
+model User {
+  id                   Int        @id @default(autoincrement())
+  name                 String?
+  userName             String?
+  phoneNumber          String?    @unique
+  hashedPassword       String?
+  email                String     @unique
+  avatar               String?
+  role                 Role       @default(player)
+  isActive             Boolean    @default(true)
+  status               String?
+  facebookAccount      String?
+  OTP                  String?
+  OTP_method           OTPMethod?
+  dateOfBirth          DateTime?
+  sex                  Sex?
+  hashedRefreshToken   String?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @default(now()) @updatedAt
+  firebaseUID          String?
+}
+
+enum Role {
+  admin
+  staff
+  player
+}
+
+enum OTPMethod {
+  email
+  phone
+}
+
+enum Sex {
+  male
+  female
+  other
+}

@@ -14,6 +14,7 @@ import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
 import Keyv from 'keyv';
 import { PrismaModule } from './prisma/prisma.module';
 import KeyvRedis from '@keyv/redis';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -42,7 +43,7 @@ import KeyvRedis from '@keyv/redis';
     EventModule,
     FavouriteModule,
     PostModule,
-    // UploadModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
