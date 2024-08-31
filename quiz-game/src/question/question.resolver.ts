@@ -43,8 +43,11 @@ export class QuestionResolver {
   }
 
   @Query(() => [QuizGameQuestionEntity], { name: 'generateRandomQuestions' })
-  generateRandomQuestions(@Args('length', { type: () => Int }) length: number) {
-    return this.questionService.generateRandomQuestions(length);
+  generateRandomQuestions(
+    @Args('length', { type: () => Int }) length: number,
+    @Args('quizGameId', { type: () => Int }) quizGameId: number,
+  ) {
+    return this.questionService.generateRandomQuestions(quizGameId, length, []);
   }
 
   @Query(() => Boolean, { name: 'checkAnswer' })

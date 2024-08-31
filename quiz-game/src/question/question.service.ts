@@ -122,22 +122,40 @@ export class QuestionService {
     return result;
   }
 
-  async generateRandomQuestions(length: number) {
+  async generateRandomQuestions(
+    quizGameId: number,
+    length: number,
+    showedQuestionIds: number[],
+  ) {
     try {
-      const allQuestions = await this.prisma.quizGameQuestion.findMany({
-        where: { isDeleted: false },
+      const availableQuestions = await this.prisma.quizGameQuestion.findMany({
+        where: {
+          quizGames: {
+            some: {
+              quizGameId: quizGameId,
+            },
+          },
+          isDeleted: false,
+          id: { notIn: showedQuestionIds ?? [] },
+        },
         select: {
+          id: true,
+          content: true,
+          images: true,
           answers: true,
         },
       });
 
-      if (length > allQuestions.length) {
+      if (length > availableQuestions.length) {
         throw new Error(
           'Requested length exceeds the number of available questions',
         );
       }
 
-      const shuffledQuestions = allQuestions.sort(() => 0.5 - Math.random());
+      const shuffledQuestions = availableQuestions.sort(
+        () => 0.5 - Math.random(),
+      );
+
       return shuffledQuestions.slice(0, length);
     } catch (error) {
       throw new InternalServerErrorException(
@@ -163,5 +181,27 @@ export class QuestionService {
       }
       throw new InternalServerErrorException('Error checking answer');
     }
+  }
+
+  async getCorrectAnswersForQuestions(questionIds: number[]) {
+    return this.prisma.quizGameQuestion.findMany({
+      where: {
+        id: { in: questionIds },
+        isDeleted: false,
+      },
+      select: {
+        id: true,
+        correctAnswerId: true,
+      },
+    });
+  }
+
+  async getTotalQuestionsCount(quizGameId: number) {
+    return this.prisma.quizGameQuestion.count({
+      where: {
+        quizGames: { some: { id: quizGameId } },
+        isDeleted: false,
+      },
+    });
   }
 }
