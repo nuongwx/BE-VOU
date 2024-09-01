@@ -21,6 +21,9 @@ export class QuizGameEntity {
   @Field(() => Number)
   companyId: number;
 
+  @Field(() => Number)
+  eventId: number;
+
   @Field(() => [QuizGameQuestionEntity])
   questions: QuizGameQuestionEntity[];
 }
