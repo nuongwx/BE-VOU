@@ -4,11 +4,12 @@ import {
   QuizService,
   ShakeService,
   UserService,
+  VoucherService,
 } from './prisma.service';
 
 @Global()
 @Module({
-  providers: [QuizService, ShakeService, EventService, UserService],
-  exports: [QuizService, ShakeService, EventService, UserService],
+  providers: [QuizService, ShakeService, EventService, VoucherService, UserService],
+  exports: [QuizService, ShakeService, EventService, VoucherService, UserService],
 })
 export class PrismaModule {}

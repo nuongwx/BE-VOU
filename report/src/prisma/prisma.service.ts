@@ -3,6 +3,7 @@ import { PrismaClient as Quiz } from '@prisma-quiz-db/client';
 import { PrismaClient as Shake } from '@prisma-shake-db/client';
 import { PrismaClient as Event } from '@prisma-Event-db/client';
 import { PrismaClient as User } from '@prisma-user-db/client';
+import { PrismaClient as Voucher } from '@prisma-voucher-db/client';
 
 @Injectable()
 export class QuizService extends Quiz implements OnModuleInit, OnModuleDestroy {
@@ -69,3 +70,19 @@ export class UserService extends User implements OnModuleInit, OnModuleDestroy {
     await this.$disconnect();
   }
 }
+
+@Injectable()
+export class VoucherService extends Voucher implements OnModuleInit, OnModuleDestroy {
+  constructor() {
+    super();
+  }
+
+  async onModuleInit() {
+    await this.$connect();
+  }
+
+  async onModuleDestroy() {
+    await this.$disconnect();
+  }
+}
+
