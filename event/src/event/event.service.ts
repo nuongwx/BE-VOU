@@ -35,4 +35,33 @@ export class EventService {
       where: { id },
     });
   }
+
+  async getAllUpcomingEvents() {
+    const currentTime = new Date();
+
+    return await this.prisma.event.findMany({
+      where: {
+        status: 'ACTIVE',
+        beginAt: {
+          gt: currentTime,
+        },
+      },
+    });
+  }
+
+  async getAllOngoingEvents() {
+    const currentTime = new Date();
+
+    return await this.prisma.event.findMany({
+      where: {
+        status: 'ACTIVE',
+        beginAt: {
+          lte: currentTime,
+        },
+        endAt: {
+          gte: currentTime,
+        },
+      },
+    });
+  }
 }

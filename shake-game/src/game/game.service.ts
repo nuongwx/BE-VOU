@@ -71,4 +71,10 @@ export class GameService {
       throw new InternalServerErrorException('Error assigning voucher');
     }
   }
+
+  async getShakeGameById(id: number) {
+    return await this.prisma.game.findUnique({
+      where: { id },
+    });
+  }
 }

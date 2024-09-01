@@ -12,16 +12,16 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  const microserviceRabbitmq = app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: ['amqp://localhost:5672'],
-      queue: 'voucher_queue',
-      queueOptions: {
-        durable: false,
-      },
-    },
-  });
+  // const microserviceRabbitmq = app.connectMicroservice<MicroserviceOptions>({
+  //   transport: Transport.RMQ,
+  //   options: {
+  //     urls: ['amqp://localhost:5672'],
+  //     queue: 'voucher_queue',
+  //     queueOptions: {
+  //       durable: false,
+  //     },
+  //   },
+  // });
 
   await app.startAllMicroservices();
   await app.listen(3000);

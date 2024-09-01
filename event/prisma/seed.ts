@@ -1,12 +1,54 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+
 async function main() {
+  await prisma.favourite.deleteMany();
+  await prisma.post.deleteMany();
+  await prisma.event.deleteMany();
+
+  console.log('All existing data deleted.');
+
+  const now = new Date();
+  const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24);
+  const yesterday = new Date(now.getTime() - 1000 * 60 * 60 * 24);
+
+  // Sự kiện đã bắt đầu và kết thúc trước hôm nay
+  const pastEvent = await prisma.event.create({
+    data: {
+      name: 'Past Event',
+      description: 'An event that has already ended',
+      beginAt: yesterday, // Bắt đầu trước hôm nay
+      endAt: now, // Kết thúc trước hôm nay
+    },
+  });
+
+  // Sự kiện đang diễn ra
+  const ongoingEvent = await prisma.event.create({
+    data: {
+      name: 'Ongoing Event',
+      description: 'An event that is currently ongoing',
+      beginAt: yesterday, // Bắt đầu trước hôm nay
+      endAt: tomorrow, // Kết thúc sau hôm nay
+    },
+  });
+
+  // Sự kiện sắp diễn ra
+  const upcomingEvent = await prisma.event.create({
+    data: {
+      name: 'Upcoming Event',
+      description: 'An event that will start in the future',
+      beginAt: tomorrow, // Bắt đầu sau hôm nay
+      endAt: new Date(tomorrow.getTime() + 1000 * 60 * 60 * 24), // Kết thúc sau hôm nay
+    },
+  });
+
+  // Các sự kiện mẫu ban đầu
   const event1 = await prisma.event.create({
     data: {
       name: 'Event 1',
       description: 'Event 1 Description',
-      beginAt: new Date(),
-      endAt: new Date(new Date().getTime() + 1000 * 60 * 60 * 24),
+      beginAt: now,
+      endAt: tomorrow,
     },
   });
 
@@ -14,8 +56,8 @@ async function main() {
     data: {
       name: 'Event 2',
       description: 'Event 2 Description',
-      beginAt: new Date(),
-      endAt: new Date(new Date().getTime() + 1000 * 60 * 60 * 24),
+      beginAt: now,
+      endAt: tomorrow,
     },
   });
 
@@ -23,11 +65,12 @@ async function main() {
     data: {
       name: 'Event 3',
       description: 'Event 3 Description',
-      beginAt: new Date(),
-      endAt: new Date(new Date().getTime() + 1000 * 60 * 60 * 24),
+      beginAt: now,
+      endAt: tomorrow,
     },
   });
 
+  // Các bài viết liên kết với sự kiện
   const post11 = await prisma.post.create({
     data: {
       title: 'Post 11',
@@ -106,6 +149,7 @@ async function main() {
     },
   });
 
+  // Các yêu thích liên kết với sự kiện
   const favourite11 = await prisma.favourite.create({
     data: {
       event: {
@@ -151,6 +195,9 @@ async function main() {
   });
 
   console.log({
+    pastEvent,
+    ongoingEvent,
+    upcomingEvent,
     event1,
     event2,
     event3,
@@ -166,9 +213,11 @@ async function main() {
     favourite21,
   });
 }
+
 main()
   .catch((e) => {
-    throw e;
+    console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();

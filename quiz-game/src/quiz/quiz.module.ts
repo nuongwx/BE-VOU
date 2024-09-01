@@ -19,6 +19,17 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           },
         },
       },
+      // {
+      //   name: 'QUIZ_SERVICE',
+      //   transport: Transport.RMQ,
+      //   options: {
+      //     urls: ['amqp://localhost:5672'],
+      //     queue: 'quiz_queue',
+      //     queueOptions: {
+      //       durable: false,
+      //     },
+      //   },
+      // },
     ]),
   ],
   providers: [QuizGameResolver, QuizGameService],

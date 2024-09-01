@@ -61,4 +61,14 @@ export class EventResolver {
       },
     });
   }
+
+  @Query(() => [Event], { name: 'getAllUpcomingEvents' })
+  getAllUpcomingEvents() {
+    return this.eventService.getAllUpcomingEvents();
+  }
+
+  @Query(() => [Event], { name: 'getAllOngoingEvents' })
+  getAllOngoingEvents() {
+    return this.eventService.getAllOngoingEvents();
+  }
 }

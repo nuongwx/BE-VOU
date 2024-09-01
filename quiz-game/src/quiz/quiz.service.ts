@@ -170,4 +170,10 @@ export class QuizGameService {
       throw new InternalServerErrorException('Error assigning voucher');
     }
   }
+
+  async getQuizGameById(id: number) {
+    return await this.prisma.quizGame.findUnique({
+      where: { id },
+    });
+  }
 }

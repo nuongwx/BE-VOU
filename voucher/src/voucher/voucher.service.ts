@@ -1,16 +1,22 @@
 import { CreateVoucherInput } from './dto/create-voucher.input';
 import { UpdateVoucherInput } from './dto/update-voucher.input';
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { VoucherStatus } from '@prisma/client';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class VoucherService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject('QUIZ_SERVICE') private readonly quizClient: ClientProxy, // @Inject('SHAKE_SERVICE') private readonly shakeClient: ClientProxy,
+  ) {}
 
   async create(createVoucherInput: CreateVoucherInput) {
     try {
@@ -339,5 +345,84 @@ export class VoucherService {
       }
       throw new InternalServerErrorException('Error using voucher');
     }
+  }
+
+  async getVoucherFromQuiz(quizGameId: number) {
+    console.log('---- quizGameId start queue', quizGameId);
+
+    const quizGame = await firstValueFrom(
+      this.quizClient
+        .send({ cmd: 'get_quiz_game_by_id' }, { id: quizGameId })
+        .pipe(timeout(5000)),
+    );
+
+    console.log('---- quizGame', quizGame);
+
+    if (!quizGame || quizGame.length === 0) {
+      throw new NotFoundException(`QuizGame with ID ${quizGameId} not found`);
+    }
+
+    const voucher = await this.prisma.voucher.findFirst({
+      where: { eventId: quizGame[0].eventId },
+    });
+
+    console.log('---- voucher', voucher);
+
+    return voucher;
+  }
+
+  // async getVoucherFromShake(shakeGameId: number) {
+  //   const shakeGame = await firstValueFrom(
+  //     this.shakeClient.send(
+  //       { cmd: 'get_shake_game_by_id' },
+  //       { id: shakeGameId },
+  //     ),
+  //   );
+
+  //   if (!shakeGame || shakeGame.length === 0) {
+  //     throw new NotFoundException(
+  //       `Shake game with ID ${shakeGameId} not found`,
+  //     );
+  //   }
+
+  //   const voucher = await this.prisma.voucher.findFirst({
+  //     where: { eventId: shakeGame[0].eventId },
+  //   });
+
+  //   console.log('---- voucher', voucher);
+
+  //   return voucher;
+  // }
+
+  async getAllVouchersByUser(userId: number) {
+    const res = await this.prisma.voucherLine.findMany({
+      where: { userId },
+      include: { voucher: true },
+    });
+
+    console.log('---- res', res);
+
+    return res;
+  }
+
+  async getOneVoucher(voucherId: number) {
+    const voucher = await this.prisma.voucher.findUnique({
+      where: { id: voucherId },
+    });
+
+    console.log('---- voucher', voucher);
+
+    return voucher;
+  }
+
+  async updateVoucherStatus(voucherId: number, status: VoucherStatus) {
+    const updated = await this.prisma.voucher.update({
+      where: { id: voucherId },
+      data: { status },
+    });
+
+    console.log('---- updated', updated);
+
+    return updated;
   }
 }

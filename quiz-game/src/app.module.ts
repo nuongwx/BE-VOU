@@ -12,24 +12,35 @@ import { PrismaService } from './prisma/prisma.service';
 import { ProducerModule } from './producer/producer.module';
 import { ConsumerModule } from './consumer/consumer.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+// import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'AUTH_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://localhost:5672'],
-          queue: 'auth_queue',
-          queueOptions: {
-            durable: false,
-          },
-        },
-      },
-    ]),
+    // ClientsModule.register([
+    // {
+    //   name: 'AUTH_SERVICE',
+    //   transport: Transport.RMQ,
+    //   options: {
+    //     urls: ['amqp://localhost:5672'],
+    //     queue: 'auth_queue',
+    //     queueOptions: {
+    //       durable: false,
+    //     },
+    //   },
+    // },
+    // {
+    //   name: 'QUIZ_SERVICE',
+    //   transport: Transport.RMQ,
+    //   options: {
+    //     urls: ['amqp://localhost:5672'],
+    //     queue: 'quiz_queue',
+    //     queueOptions: {
+    //       durable: false,
+    //     },
+    //   },
+    // },
+    // ]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,

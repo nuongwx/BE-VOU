@@ -3,6 +3,7 @@ import { VoucherService } from './voucher.service';
 import { Voucher, VoucherLine } from './entities/voucher.entity';
 import { CreateVoucherInput } from './dto/create-voucher.input';
 import { UpdateVoucherInput } from './dto/update-voucher.input';
+import { VoucherStatus } from '@prisma/client';
 
 @Resolver(() => Voucher)
 export class VoucherResolver {
@@ -102,5 +103,41 @@ export class VoucherResolver {
     @Args('to_user', { type: () => Int }) to_user: number,
   ) {
     return this.voucherService.giftVoucher(voucherId, from_user, to_user);
+  }
+
+  @Query(() => Voucher, { name: 'getVoucherFromQuiz' })
+  async getVoucherFromQuiz(
+    @Args('quizGameId', { type: () => Int }) quizGameId: number,
+  ) {
+    return this.voucherService.getVoucherFromQuiz(quizGameId);
+  }
+
+  // @Query(() => Voucher, { name: 'getVoucherFromShake' })
+  // async getVoucherFromShake(
+  //   @Args('shakeGameId', { type: () => Int }) shakeGameId: number,
+  // ) {
+  //   return this.voucherService.getVoucherFromShake(shakeGameId);
+  // }
+
+  @Query(() => [VoucherLine], { name: 'getAllVouchersByUser' })
+  async getAllVouchersByUser(
+    @Args('userId', { type: () => Int }) userId: number,
+  ) {
+    return this.voucherService.getAllVouchersByUser(userId);
+  }
+
+  @Query(() => Voucher, { name: 'getOneVoucher' })
+  async getOneVoucher(
+    @Args('voucherId', { type: () => Int }) voucherId: number,
+  ) {
+    return this.voucherService.getOneVoucher(voucherId);
+  }
+
+  @Mutation(() => Voucher, { name: 'updateVoucherStatus' })
+  async updateVoucherStatus(
+    @Args('voucherId', { type: () => Int }) voucherId: number,
+    @Args('status', { type: () => String }) status: VoucherStatus,
+  ) {
+    return this.voucherService.updateVoucherStatus(voucherId, status);
   }
 }
