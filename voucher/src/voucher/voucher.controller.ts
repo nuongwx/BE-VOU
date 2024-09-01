@@ -3,11 +3,11 @@ import { MessagePattern } from '@nestjs/microservices';
 import { VoucherService } from './voucher.service';
 
 @Controller()
-export class AuthController {
+export class VoucherController {
   constructor(private readonly voucherService: VoucherService) {}
 
-  @MessagePattern({ cmd: 'assign_voucher' })
-  async validateToken(voucherId: number, userId: number, qr_code: string) {
-    return this.voucherService.addVoucherToUser(voucherId, userId, qr_code);
+  @MessagePattern({ cmd: 'assign_voucher_to_user' })
+  async validateToken(eventId: number, userId: number) {
+    return this.voucherService.assignVoucherToUser(eventId, userId);
   }
 }

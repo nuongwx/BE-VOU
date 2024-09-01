@@ -2,14 +2,20 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  Inject,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQuizGameInput } from './dto/create-quiz.input';
 import { UpdateQuizGameInput } from './dto/update-quiz.input';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class QuizGameService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject('VOUCHER_SERVICE') private readonly voucherClient: ClientProxy,
+  ) {}
 
   async create(createQuizGameInput: CreateQuizGameInput) {
     try {
@@ -136,6 +142,32 @@ export class QuizGameService {
       throw new InternalServerErrorException(
         'Error removing question from quiz game',
       );
+    }
+  }
+
+  async assignVoucherForWinnerUser(quizGameId: number, userId: number) {
+    try {
+      const quizGame = await this.prisma.quizGame.findUnique({
+        where: { id: quizGameId, isDeleted: false },
+        select: { eventId: true },
+      });
+
+      if (!quizGame) {
+        throw new NotFoundException('Quiz game not found');
+      }
+
+      const eventId = quizGame.eventId;
+
+      const result = await firstValueFrom(
+        this.voucherClient.send(
+          { cmd: 'assign_voucher_to_user' },
+          { eventId, userId },
+        ),
+      );
+
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Error assigning voucher');
     }
   }
 }

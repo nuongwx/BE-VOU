@@ -52,6 +52,42 @@ export class VoucherService {
     }
   }
 
+  async assignVoucherToUser(eventId: number, userId: number) {
+    try {
+      const voucher = await this.prisma.voucher.findFirst({
+        where: {
+          eventId: eventId,
+          status: 'VALID',
+          endTime: {
+            gt: new Date(),
+          },
+        },
+      });
+
+      if (!voucher) {
+        throw new Error('No valid voucher available for this event.');
+      }
+
+      // Pls generate a QR code here
+      const qr_code = '';
+
+      return await this.prisma.voucherLine.create({
+        data: {
+          voucher: {
+            connect: {
+              id: voucher.id,
+            },
+          },
+          qr_code: qr_code,
+          userId: userId,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Error assigning voucher');
+    }
+  }
+
   async findVoucherNotUsedByUser(userId: number) {
     try {
       return await this.prisma.voucherLine.findMany({
