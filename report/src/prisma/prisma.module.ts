@@ -1,7 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import {
   EventService,
-  PrismaService,
   QuizService,
   ShakeService,
   UserService,
@@ -9,19 +8,7 @@ import {
 
 @Global()
 @Module({
-  providers: [
-    PrismaService,
-    QuizService,
-    ShakeService,
-    EventService,
-    UserService,
-  ],
-  exports: [
-    PrismaService,
-    QuizService,
-    ShakeService,
-    EventService,
-    UserService,
-  ],
+  providers: [QuizService, ShakeService, EventService, UserService],
+  exports: [QuizService, ShakeService, EventService, UserService],
 })
 export class PrismaModule {}

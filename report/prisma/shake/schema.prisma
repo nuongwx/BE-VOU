@@ -15,6 +15,7 @@ model Game {
   createdAt DateTime @default(now())
   updatedAt DateTime
   company   String[]
+  eventId   Int      @default(1)
   lives     Int      @default(3)
   isDeleted Boolean  @default(false)
   User      User[]
