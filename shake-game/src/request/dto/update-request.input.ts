@@ -5,4 +5,7 @@ import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 export class UpdateRequestInput extends PartialType(CreateRequestInput) {
   @Field(() => Int)
   id: number;
+
+  @Field(() => Boolean)
+  isAccepted: boolean;
 }

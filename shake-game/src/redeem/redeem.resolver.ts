@@ -4,7 +4,7 @@ import { Redeem } from './entities/redeem.entity';
 import { CreateRedeemInput } from './dto/create-redeem.input';
 import { UpdateRedeemInput } from './dto/update-redeem.input';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from 'src/user/entities/user.entity';
+import { ShakeUser } from 'src/user/entities/user.entity';
 
 @Resolver(() => Redeem)
 export class RedeemResolver {
@@ -47,7 +47,7 @@ export class RedeemResolver {
     });
   }
 
-  @ResolveField('user', () => User, { description: 'Redeem User' })
+  @ResolveField('user', () => ShakeUser, { description: 'Redeem User' })
   user(@Parent() redeem: Redeem) {
     return this.prisma.user.findUniqueOrThrow({
       where: {

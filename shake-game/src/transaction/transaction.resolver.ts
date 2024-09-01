@@ -4,7 +4,7 @@ import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionInput } from './dto/create-transaction.input';
 import { UpdateTransactionInput } from './dto/update-transaction.input';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from 'src/user/entities/user.entity';
+import { ShakeUser } from 'src/user/entities/user.entity';
 import { Inject } from '@nestjs/common';
 import { ClientGrpc, ClientProxy } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
@@ -69,7 +69,7 @@ export class TransactionResolver {
     return this.transactionService.remove(id);
   }
 
-  @ResolveField('sender', () => User, { description: 'Sender' })
+  @ResolveField('sender', () => ShakeUser, { description: 'Sender' })
   sender(@Parent() transaction: Transaction) {
     return this.prisma.user.findUniqueOrThrow({
       where: {
@@ -78,7 +78,7 @@ export class TransactionResolver {
     });
   }
 
-  @ResolveField('receiver', () => User, { description: 'Receiver' })
+  @ResolveField('receiver', () => ShakeUser, { description: 'Receiver' })
   receiver(@Parent() transaction: Transaction) {
     return this.prisma.user.findUniqueOrThrow({
       where: {

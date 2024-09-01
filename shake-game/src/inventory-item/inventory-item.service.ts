@@ -58,7 +58,7 @@ export class InventoryItemService {
 
     const randomItem = items[Math.floor(Math.random() * items.length)];
 
-    return this.prisma.inventoryItem.create({
+    const inventoryItem = await this.prisma.inventoryItem.create({
       data: {
         Item: {
           connect: {
@@ -73,6 +73,29 @@ export class InventoryItemService {
         },
       },
     });
+
+    // create a transaction
+    await this.prisma.transaction.create({
+      data: {
+        InventoryItem: {
+          connect: {
+            id: inventoryItem.id,
+          },
+        },
+        Sender: {
+          connect: {
+            id: 1, // TODO: add system user
+          },
+        },
+        Receiver: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    return inventoryItem;
   }
 
   findAll() {

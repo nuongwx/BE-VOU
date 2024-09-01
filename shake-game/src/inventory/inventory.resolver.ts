@@ -4,7 +4,7 @@ import { Inventory } from './entities/inventory.entity';
 import { CreateInventoryInput } from './dto/create-inventory.input';
 import { UpdateInventoryInput } from './dto/update-inventory.input';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from 'src/user/entities/user.entity';
+import { ShakeUser } from 'src/user/entities/user.entity';
 import { InventoryItem } from 'src/inventory-item/entities/inventory-item.entity';
 
 @Resolver(() => Inventory)
@@ -39,7 +39,7 @@ export class InventoryResolver {
     return this.inventoryService.remove(id);
   }
 
-  @ResolveField('user', () => User, { description: 'User' })
+  @ResolveField('user', () => ShakeUser, { description: 'User' })
   user(@Parent() inventory: Inventory) {
     return this.prisma.user.findFirstOrThrow({
       where: {
