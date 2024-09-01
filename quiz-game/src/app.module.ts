@@ -14,6 +14,7 @@ import { ConsumerModule } from './consumer/consumer.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AuthModule } from './auth/auth.module';
     ConsumerModule,
     RedisCacheModule,
     AuthModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
