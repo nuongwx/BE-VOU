@@ -50,7 +50,7 @@ export class VoucherResolver {
   }
 
   @Mutation(() => Voucher)
-  useVoucher(
+  removeVoucherFromUser(
     @Args('voucherId') voucherId: number,
     @Args('userId') userId: number,
   ) {
@@ -77,5 +77,30 @@ export class VoucherResolver {
     @Args('userId', { type: () => Int }) userId: number,
   ) {
     return this.voucherService.findVoucherExpiredByUser(userId);
+  }
+
+  @Query(() => [VoucherLine])
+  findVoucherNotUsedByUser(
+    @Args('userId', { type: () => Int }) userId: number,
+  ) {
+    return this.voucherService.findVoucherNotUsedByUser(userId);
+  }
+
+  @Query(() => Voucher)
+  useVoucher(
+    @Args('voucherId', { type: () => Int }) voucherId: number,
+    @Args('userId', { type: () => Int }) userId: number,
+    @Args('qr_code') qr_code: string,
+  ) {
+    return this.voucherService.useVoucher(voucherId, userId, qr_code);
+  }
+
+  @Mutation(() => Voucher)
+  giftVoucher(
+    @Args('voucherId', { type: () => Int }) voucherId: number,
+    @Args('from_user', { type: () => Int }) from_user: number,
+    @Args('to_user', { type: () => Int }) to_user: number,
+  ) {
+    return this.voucherService.giftVoucher(voucherId, from_user, to_user);
   }
 }

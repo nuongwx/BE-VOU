@@ -52,6 +52,19 @@ export class VoucherService {
     }
   }
 
+  async findVoucherNotUsedByUser(userId: number) {
+    try {
+      return await this.prisma.voucherLine.findMany({
+        where: {
+          userId: { equals: userId },
+          status: { equals: VoucherStatus.VALID },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
   async findAll() {
     try {
       return await this.prisma.voucher.findMany();
@@ -197,6 +210,98 @@ export class VoucherService {
       });
     } catch (error) {
       throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async useVoucher(voucherId: number, userId: number, qr_code: string) {
+    try {
+      const voucherLine = await this.prisma.voucherLine.findFirst({
+        where: {
+          userId: userId,
+          voucherId: voucherId,
+          qr_code: qr_code,
+          status: VoucherStatus.VALID,
+        },
+      });
+
+      if (!voucherLine) {
+        throw new NotFoundException('Voucher not found');
+      }
+
+      return await this.prisma.voucherLine.update({
+        where: {
+          id: voucherLine.id,
+        },
+        data: {
+          status: VoucherStatus.USED,
+          updatedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error using voucher');
+    }
+  }
+
+  async giftVoucher(voucherId: number, from_user: number, to_user: number) {
+    try {
+      const voucherLine = await this.prisma.voucherLine.findFirst({
+        where: {
+          userId: from_user,
+          voucherId: voucherId,
+          status: VoucherStatus.VALID,
+        },
+      });
+
+      if (!voucherLine) {
+        throw new NotFoundException('Voucher not found');
+      }
+
+      const voucherTrans = await this.prisma.voucherTrans.create({
+        data: {
+          voucher: {
+            connect: {
+              id: voucherId,
+            },
+          },
+          from_user: from_user,
+          to_user: to_user,
+        },
+      });
+
+      await this.prisma.voucherLine.update({
+        where: {
+          id: voucherLine.id,
+        },
+        data: {
+          status: VoucherStatus.INVALID,
+          updatedAt: new Date(),
+        },
+      });
+
+      return {
+        message: 'Voucher gifted successfully',
+        voucherInfo: this.prisma.voucherLine.create({
+          data: {
+            voucher: {
+              connect: {
+                id: voucherId,
+              },
+            },
+            userId: to_user,
+            qr_code: voucherLine.qr_code,
+            status: VoucherStatus.VALID,
+          },
+        }),
+        voucherTrans: voucherTrans,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error using voucher');
     }
   }
 }
