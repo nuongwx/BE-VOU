@@ -6,7 +6,6 @@ import { VoucherService } from './voucher.service';
 export class AuthController {
   constructor(private readonly voucherService: VoucherService) {}
 
-  // To receive messages from other BE repositories, they need to verify the user token
   @MessagePattern({ cmd: 'assign_voucher' })
   async validateToken(voucherId: number, userId: number, qr_code: string) {
     return this.voucherService.addVoucherToUser(voucherId, userId, qr_code);
