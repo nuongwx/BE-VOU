@@ -17,6 +17,9 @@ export class Voucher {
   @Field(() => Int)
   value: number;
 
+  @Field(() => Int)
+  eventId: number;
+
   @Field(() => [Int])
   brandId: [number];
 
