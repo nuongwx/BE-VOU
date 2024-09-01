@@ -50,3 +50,21 @@ export class VoucherLine {
   @Field(() => [String], { nullable: true })
   image?: [string];
 }
+
+@ObjectType()
+export class VoucherTran {
+  @Field(() => Int)
+  id: number;
+
+  @Field(() => Int)
+  voucherId: number;
+
+  @Field(() => String)
+  userId: string;
+
+  @Field(() => String, { nullable: true })
+  qr_code: string;
+
+  @Field(() => [String], { nullable: true })
+  image?: [string];
+}
