@@ -44,7 +44,6 @@ async function main() {
 
   // Seed QuizGameQuestions and QuizGameAnswers
   const questionsData = [
-    // Original 15 questions
     {
       content: 'What is the capital of France?',
       images: ['image1.png', 'image2.png'],
@@ -135,7 +134,6 @@ async function main() {
       answers: ['Mercury', 'Venus', 'Earth'],
       correctAnswer: 'Mercury',
     },
-    // 30 new questions
     {
       content: 'Which ocean is the largest?',
       images: [],
@@ -349,7 +347,7 @@ async function main() {
     // Update the correctAnswerId in the question
     await prisma.quizGameQuestion.update({
       where: { id: question.id },
-      data: { correctAnswerId: correctAnswer!.id },
+      data: { correctAnswerId: correctAnswer.id },
     });
 
     // Save the question object for later use in mappings
@@ -360,14 +358,19 @@ async function main() {
   const quizGames = [quizGame1, quizGame2, quizGame3];
   const mappings = [];
 
-  questions.forEach((question, index) => {
-    quizGames.forEach((quizGame, gameIndex) => {
-      if (index % quizGames.length === gameIndex) {
-        mappings.push({
-          quizGameId: quizGame.id,
-          quizQuestionId: question.id,
-        });
-      }
+  quizGames.forEach((quizGame) => {
+    let orderIndex = 0;
+
+    const shuffledQuestions = questions
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 10);
+
+    shuffledQuestions.forEach((question) => {
+      mappings.push({
+        quizGameId: quizGame.id,
+        quizQuestionId: question.id,
+        orderIndex: orderIndex++,
+      });
     });
   });
 

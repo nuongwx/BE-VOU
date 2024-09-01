@@ -41,13 +41,14 @@ model QuizGameAnswer {
 
 
 model QuizGameQuestionToQuizGameMapping {
-  id            Int              @id @default(autoincrement())
-  
-  quizQuestionId Int
-  quizGameId     Int
+  id                Int                @id @default(autoincrement())
+  quizQuestionId    Int
+  quizGameId        Int
+  orderIndex        Int                @default(0)
 
-  quizGame       QuizGame         @relation(fields: [quizGameId], references: [id])
-  quizGameQuestion QuizGameQuestion @relation(fields: [quizQuestionId], references: [id])
+  quizGame          QuizGame           @relation(fields: [quizGameId], references: [id])
+  quizGameQuestion  QuizGameQuestion   @relation(fields: [quizQuestionId], references: [id])
 
   @@unique([quizGameId, quizQuestionId])
 }
+
