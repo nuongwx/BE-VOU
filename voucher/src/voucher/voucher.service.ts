@@ -88,7 +88,7 @@ export class VoucherService {
     }
   }
 
-  async findVoucherNotUsedByUser(userId: number) {
+  async findValidVoucherByUser(userId: number) {
     try {
       return await this.prisma.voucherLine.findMany({
         where: {

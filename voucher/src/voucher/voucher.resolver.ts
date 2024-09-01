@@ -72,7 +72,9 @@ export class VoucherResolver {
   }
 
   @Query(() => VoucherLine, { name: 'findOneUserVoucher' })
-  findOneUserVoucher(@Args('voucherId', { type: () => Int }) voucherId: number) {
+  findOneUserVoucher(
+    @Args('voucherId', { type: () => Int }) voucherId: number,
+  ) {
     return this.voucherService.findOneUserVoucher(voucherId);
   }
 
@@ -82,17 +84,23 @@ export class VoucherResolver {
   }
 
   @Query(() => [Voucher], { name: 'findExpiredVoucherByEvent' })
-  findExpiredVoucherByEvent(@Args('eventId', { type: () => Int }) eventId: number) {
+  findExpiredVoucherByEvent(
+    @Args('eventId', { type: () => Int }) eventId: number,
+  ) {
     return this.voucherService.findExpiredVoucherByEvent(eventId);
   }
 
   @Query(() => [Voucher], { name: 'findValidVoucherByEvent' })
-  findValidVoucherByEvent(@Args('eventId', { type: () => Int }) eventId: number) {
+  findValidVoucherByEvent(
+    @Args('eventId', { type: () => Int }) eventId: number,
+  ) {
     return this.voucherService.findValidVoucherByEvent(eventId);
   }
 
   @Query(() => [Voucher], { name: 'findUsedVoucherByEvent' })
-  findUsedVoucherByEvent(@Args('eventId', { type: () => Int }) eventId: number) {
+  findUsedVoucherByEvent(
+    @Args('eventId', { type: () => Int }) eventId: number,
+  ) {
     return this.voucherService.findUsedVoucherByEvent(eventId);
   }
 
@@ -129,10 +137,8 @@ export class VoucherResolver {
   }
 
   @Query(() => [VoucherLine])
-  findVoucherNotUsedByUser(
-    @Args('userId', { type: () => Int }) userId: number,
-  ) {
-    return this.voucherService.findVoucherNotUsedByUser(userId);
+  findValidVoucherByUser(@Args('userId', { type: () => Int }) userId: number) {
+    return this.voucherService.findValidVoucherByUser(userId);
   }
 
   @Query(() => Voucher)
