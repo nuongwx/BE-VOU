@@ -1,9 +1,13 @@
 import { Resolver, Query, Args } from '@nestjs/graphql';
 import { ReportService } from './report.service';
+import { UserEntity } from 'src/report/entities/user.entity';
+import { QuizGameEntity } from 'src/report/entities/quiz.entity';
+import { Game } from 'src/report/entities/game.entity';
+import { Voucher } from 'src/report/entities/voucher.entity';
 
 @Resolver()
 export class ReportResolver {
-  constructor(private readonly reportService: ReportService) {}
+  constructor(private readonly reportService: ReportService) { }
 
   @Query(() => Number)
   async countTotalPlayers(): Promise<number> {
@@ -39,36 +43,54 @@ export class ReportResolver {
     return this.reportService.getHighestCount(entity);
   }
 
-  @Query(() => [])
-async getPlayersByDateRange(
-  @Args('startDate') startDate: string,
-  @Args('endDate') endDate: string,
-): Promise<any[]> {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  return this.reportService.getPlayersByDateRange(start, end);
-}
+  @Query(() => [UserEntity])
+  async getPlayersByDateRange(
+    @Args('startDate') startDate: string,
+    @Args('endDate') endDate: string,
+  ): Promise<any[]> {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return this.reportService.getPlayersByDateRange(start, end);
+  }
 
-@Query(() => [])
-async getBrandsByDateRange(
-  @Args('startDate') startDate: string,
-  @Args('endDate') endDate: string,
-): Promise<any[]> {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  return this.reportService.getBrandsByDateRange(start, end);
-}
+  @Query(() => [UserEntity])
+  async getBrandsByDateRange(
+    @Args('startDate') startDate: string,
+    @Args('endDate') endDate: string,
+  ): Promise<any[]> {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return this.reportService.getBrandsByDateRange(start, end);
+  }
 
-@Query(() => [])
-async getGamesByDateRange(
-  @Args('startDate') startDate: string,
-  @Args('endDate') endDate: string,
-): Promise<any[]> {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  return this.reportService.getGamesByDateRange(start, end);
-}
+  @Query(() => [QuizGameEntity])
+  async getQuizGamesByDateRange(
+    @Args('startDate') startDate: string,
+    @Args('endDate') endDate: string,
+  ): Promise<any[]> {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return this.reportService.getQuizGamesByDateRange(start, end);
+  }
 
+  @Query(() => [Game])
+  async getShakeGamesByDateRange(
+    @Args('startDate') startDate: string,
+    @Args('endDate') endDate: string,
+  ): Promise<any[]> {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return this.reportService.getShakeGamesByDateRange(start, end);
+  }
 
+  @Query(() => [Voucher])
+  async getVouchersByDateRange(
+    @Args('startDate') startDate: string,
+    @Args('endDate') endDate: string,
+  ): Promise<any[]> {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return this.reportService.getVouchersByDateRange(start, end);
 
+  }
 }

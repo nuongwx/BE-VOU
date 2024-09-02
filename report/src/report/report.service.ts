@@ -133,8 +133,19 @@ export class ReportService {
     });
   }
 
-  async getGamesByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
-    const shakeGames = await this.shakeService.game.findMany({
+  async getQuizGamesByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+    return this.quizService.quizGame.findMany({
+      where: {
+        startTime: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getShakeGamesByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+   return this.shakeService.game.findMany({
       where: {
         createdAt: {
           gte: startDate,
@@ -142,9 +153,6 @@ export class ReportService {
         },
       },
     });
-    const quizGames = await this.quizService.quizGame.findMany({
-    });
-    return [...shakeGames, ...quizGames];
   }
   
   
