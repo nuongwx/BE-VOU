@@ -48,7 +48,6 @@ import KeyvRedis from '@keyv/redis';
     QuestionModule,
     AnswerModule,
     PrismaModule,
-
     RedisCacheModule,
     AuthModule,
   ],

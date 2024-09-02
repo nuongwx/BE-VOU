@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient as Quiz } from '@prisma-quiz-db/client';
 import { PrismaClient as Shake } from '@prisma-shake-db/client';
-import { PrismaClient as Event } from '@prisma-Event-db/client';
+import { PrismaClient as Event } from '@prisma-event-db/client';
 import { PrismaClient as User } from '@prisma-user-db/client';
 import { PrismaClient as Voucher } from '@prisma-voucher-db/client';
 
