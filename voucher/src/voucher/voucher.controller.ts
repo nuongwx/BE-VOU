@@ -10,4 +10,6 @@ export class VoucherController {
   async validateToken(eventId: number, userId: number) {
     return this.voucherService.assignVoucherToUser(eventId, userId);
   }
+
+  
 }

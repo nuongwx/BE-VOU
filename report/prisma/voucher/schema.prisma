@@ -1,0 +1,54 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/@prisma-voucher-db/client"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("VOUCHER_DATABASE_URL")
+}
+
+model Voucher {
+  id           Int            @id @default(autoincrement())
+  name         String
+  images       String[]
+  value        Float
+  description  String
+  startTime    DateTime
+  endTime      DateTime
+  createdAt    DateTime       @default(now())
+  status       VoucherStatus  @default(VALID)
+  updatedAt    DateTime       @default(now()) @updatedAt
+  brandId      Int[]
+  eventId      Int?
+  voucherLine  voucherLine[]
+  voucherTrans voucherTrans[]
+}
+
+model voucherLine {
+  id        Int           @id @default(autoincrement())
+  voucherId Int
+  userId    Int
+  qr_code   String
+  status    VoucherStatus @default(VALID)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+  voucher   Voucher       @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+}
+
+model voucherTrans {
+  id        Int      @id @default(autoincrement())
+  voucherId Int
+  from_user Int
+  to_user   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  voucher   Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+}
+
+enum VoucherStatus {
+  VALID
+  INVALID
+  USED
+}

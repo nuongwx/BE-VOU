@@ -95,7 +95,7 @@ export class VoucherService {
     }
   }
 
-  async findVoucherNotUsedByUser(userId: number) {
+  async findValidVoucherByUser(userId: number) {
     try {
       return await this.prisma.voucherLine.findMany({
         where: {
@@ -148,6 +148,28 @@ export class VoucherService {
       return await this.prisma.voucher.update({
         where: { id: id },
         data: updateVoucherInput,
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error updating voucher');
+    }
+  }
+
+  async updateUserVoucherStatus(userId: number, status: VoucherStatus) {
+    try {
+      const existingvoucherLine = await this.prisma.voucherLine.findUnique({
+        where: { id: userId },
+      });
+
+      if (!existingvoucherLine) {
+        throw new NotFoundException('Voucher not found');
+      }
+
+      return await this.prisma.voucherLine.update({
+        where: { id: userId },
+        data: { status: status },
       });
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -249,6 +271,108 @@ export class VoucherService {
         where: {
           userId: { equals: userId },
           status: { equals: VoucherStatus.INVALID },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async findOneUserVoucher(voucherId: number) {
+    try {
+      return await this.prisma.voucherLine.findFirst({
+        where: {
+          id: voucherId,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving voucher');
+    }
+  }
+
+  async findVoucherByEvent(eventId: number) {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          eventId: { equals: eventId },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async findExpiredVoucherByEvent(eventId: number) {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          eventId: { equals: eventId },
+          status: VoucherStatus.INVALID,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async findUsedVoucherByEvent(eventId: number) {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          eventId: { equals: eventId },
+          status: VoucherStatus.USED,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async findValidVoucherByEvent(eventId: number) {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          eventId: { equals: eventId },
+          status: VoucherStatus.VALID,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async findExpiredVoucher()
+  {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          status: VoucherStatus.INVALID,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async findValidVoucher()
+  {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          status: VoucherStatus.VALID,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
+
+  async findUsedVoucher()
+  {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          status: VoucherStatus.USED,
         },
       });
     } catch (error) {

@@ -45,6 +45,14 @@ export class VoucherResolver {
     );
   }
 
+  @Mutation(() => VoucherLine, { name: 'updateVoucherLine' })
+  updateVoucherLine(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('status') status: VoucherStatus,
+  ) {
+    return this.voucherService.updateUserVoucherStatus(id, status);
+  }
+
   @Mutation(() => Voucher)
   removeVoucher(@Args('id', { type: () => Int }) id: number) {
     return this.voucherService.removeVoucher(id);
@@ -61,6 +69,54 @@ export class VoucherResolver {
   @Query(() => [Voucher])
   findAllVoucherExpired() {
     return this.voucherService.findAllVoucherExpired();
+  }
+
+  @Query(() => VoucherLine, { name: 'findOneUserVoucher' })
+  findOneUserVoucher(
+    @Args('voucherId', { type: () => Int }) voucherId: number,
+  ) {
+    return this.voucherService.findOneUserVoucher(voucherId);
+  }
+
+  @Query(() => [Voucher], { name: 'findVoucherByEvent' })
+  findVoucherByEvent(@Args('eventId', { type: () => Int }) eventId: number) {
+    return this.voucherService.findVoucherByEvent(eventId);
+  }
+
+  @Query(() => [Voucher], { name: 'findExpiredVoucherByEvent' })
+  findExpiredVoucherByEvent(
+    @Args('eventId', { type: () => Int }) eventId: number,
+  ) {
+    return this.voucherService.findExpiredVoucherByEvent(eventId);
+  }
+
+  @Query(() => [Voucher], { name: 'findValidVoucherByEvent' })
+  findValidVoucherByEvent(
+    @Args('eventId', { type: () => Int }) eventId: number,
+  ) {
+    return this.voucherService.findValidVoucherByEvent(eventId);
+  }
+
+  @Query(() => [Voucher], { name: 'findUsedVoucherByEvent' })
+  findUsedVoucherByEvent(
+    @Args('eventId', { type: () => Int }) eventId: number,
+  ) {
+    return this.voucherService.findUsedVoucherByEvent(eventId);
+  }
+
+  @Query(() => [Voucher], { name: 'findUsedVoucher' })
+  findUsedVoucher() {
+    return this.voucherService.findUsedVoucher();
+  }
+
+  @Query(() => [Voucher], { name: 'findValidVoucher' })
+  findValidVoucher() {
+    return this.voucherService.findValidVoucher();
+  }
+
+  @Query(() => [Voucher], { name: 'findExpiredVoucher' })
+  findExpiredVoucher() {
+    return this.voucherService.findExpiredVoucher();
   }
 
   @Query(() => [VoucherLine])
@@ -81,10 +137,8 @@ export class VoucherResolver {
   }
 
   @Query(() => [VoucherLine])
-  findVoucherNotUsedByUser(
-    @Args('userId', { type: () => Int }) userId: number,
-  ) {
-    return this.voucherService.findVoucherNotUsedByUser(userId);
+  findValidVoucherByUser(@Args('userId', { type: () => Int }) userId: number) {
+    return this.voucherService.findValidVoucherByUser(userId);
   }
 
   @Query(() => Voucher)
