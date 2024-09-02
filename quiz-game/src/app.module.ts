@@ -50,6 +50,7 @@ import KeyvRedis from '@keyv/redis';
     PrismaModule,
     RedisCacheModule,
     AuthModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
