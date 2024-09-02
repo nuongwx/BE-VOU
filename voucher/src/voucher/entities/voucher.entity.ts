@@ -1,4 +1,5 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
+import { VoucherStatus } from '@prisma/client';
 
 @ObjectType()
 export class Voucher {
@@ -68,3 +69,7 @@ export class VoucherTran {
   @Field(() => [String], { nullable: true })
   image?: [string];
 }
+
+registerEnumType(VoucherStatus, {
+  name: 'VoucherStatus',
+});
