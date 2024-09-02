@@ -120,4 +120,44 @@ export class InventoryItemService {
       where: { id },
     });
   }
+
+  async getTotalInventory(startDate: Date, endDate: Date): Promise<number> {
+    const result = await this.prisma.inventoryItem.aggregate({
+      _count: {
+        id: true,
+      },
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+        isDeleted: false,
+      },
+    });
+
+    return result._count.id || 0;
+  }
+
+  async getTotalInventoryPerPlayers(startDate: Date, endDate: Date, userId: number): Promise<number> {
+    const result = await this.prisma.inventoryItem.aggregate({
+      _count: {
+        id: true,
+      },
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+        Inventory: {
+          User: {
+            id: userId,
+            isDeleted: false,
+          },
+        },
+        isDeleted: false,
+      },
+    });
+
+    return result._count.id || 0;
+  }
 }

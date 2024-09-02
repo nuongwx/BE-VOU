@@ -2,9 +2,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-import * as session from 'express-session';
-import * as passport from 'passport';
+import dotenv from 'dotenv';
+import session from 'express-session';
+import passport from 'passport';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 

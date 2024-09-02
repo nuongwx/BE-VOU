@@ -13,8 +13,6 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  await app.listen(3001);
-
   const configService = app.get(ConfigService);
 
   const microservice =
@@ -30,6 +28,7 @@ async function bootstrap() {
     });
 
   microservice.listen();
+  await app.listen(3001);
 
   console.log('Quiz Microservice is listening');
   console.log(`Application is running on: ${await app.getUrl()}`);

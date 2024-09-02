@@ -3,15 +3,15 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigModule và ConfigService
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { JwtRefreshStrategy, JwtStrategy } from './jwt/jwt.strategy';
 import { PrismaModule } from './prisma/prisma.module';
 import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
 import responseCachePlugin from '@apollo/server-plugin-response-cache';
+import KeyvRedis from '@keyv/redis';
 import { KeyvAdapter } from '@apollo/utils.keyvadapter';
 import Keyv from 'keyv';
-import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
@@ -25,8 +25,9 @@ import KeyvRedis from '@keyv/redis';
         sortSchema: true,
         playground: false,
         introspection: true,
+        debug: true,
         plugins: [
-          ApolloServerPluginCacheControl({ defaultMaxAge: 10 }),
+          ApolloServerPluginCacheControl({ defaultMaxAge: 6 }),
           responseCachePlugin(),
           ApolloServerPluginLandingPageLocalDefault(),
         ],

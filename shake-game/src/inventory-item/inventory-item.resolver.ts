@@ -64,4 +64,18 @@ export class InventoryItemResolver {
       },
     });
   }
+
+  @Query(() => Number, { name: 'getTotalInventory' })
+  async getTotalInventory(@Args('startDate') startDate: Date, @Args('endDate') endDate: Date): Promise<number> {
+    return this.inventoryItemService.getTotalInventory(startDate, endDate);
+  }
+
+  @Query(() => Number, { name: 'getTotalInventoryPerPlayers' })
+  async getTotalInventoryPerPlayers(
+    @Args('startDate') startDate: Date,
+    @Args('endDate') endDate: Date,
+    @Args('user') userId: number,
+  ): Promise<number> {
+    return this.inventoryItemService.getTotalInventoryPerPlayers(startDate, endDate, userId);
+  }
 }
