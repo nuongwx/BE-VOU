@@ -38,4 +38,37 @@ export class ReportResolver {
   async getHighestCount(@Args('entity') entity: string): Promise<number> {
     return this.reportService.getHighestCount(entity);
   }
+
+  @Query(() => [])
+async getPlayersByDateRange(
+  @Args('startDate') startDate: string,
+  @Args('endDate') endDate: string,
+): Promise<any[]> {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return this.reportService.getPlayersByDateRange(start, end);
+}
+
+@Query(() => [])
+async getBrandsByDateRange(
+  @Args('startDate') startDate: string,
+  @Args('endDate') endDate: string,
+): Promise<any[]> {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return this.reportService.getBrandsByDateRange(start, end);
+}
+
+@Query(() => [])
+async getGamesByDateRange(
+  @Args('startDate') startDate: string,
+  @Args('endDate') endDate: string,
+): Promise<any[]> {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return this.reportService.getGamesByDateRange(start, end);
+}
+
+
+
 }

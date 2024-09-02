@@ -97,4 +97,58 @@ export class ReportService {
     });
     return data[0]?.count || 0;
   }
+
+  async getPlayersByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+    return this.userService.user.findMany({
+      where: {
+        role: 'player',
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getVouchersByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+    return this.voucherService.voucher.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getBrandsByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+    return this.userService.user.findMany({
+      where: {
+        role: 'staff',
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getGamesByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+    const shakeGames = await this.shakeService.game.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+    const quizGames = await this.quizService.quizGame.findMany({
+    });
+    return [...shakeGames, ...quizGames];
+  }
+  
+  
+
+  
+  
 }
