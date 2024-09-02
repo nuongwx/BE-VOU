@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { TransactionResolver } from './transaction.resolver';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+// import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [

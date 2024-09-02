@@ -1,17 +1,28 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ClientsModule.registerAsync([
       {
         name: 'QUIZ_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://localhost:5672'],
-          queue: 'auth_queue',
-        },
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'auth_queue',
+            queueOptions: {
+              durable: false,
+            },
+          },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

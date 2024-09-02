@@ -3,20 +3,26 @@ import { GameService } from './game.service';
 import { GameResolver } from './game.resolver';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { GameController } from './game.controller';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ConfigModule,
+    ClientsModule.registerAsync([
       {
         name: 'VOUCHER_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
-          queue: 'voucher_queue',
-          queueOptions: {
-            durable: false,
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'voucher_queue',
+            queueOptions: {
+              durable: false,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

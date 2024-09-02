@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
@@ -14,11 +15,13 @@ async function bootstrap() {
 
   await app.listen(3001);
 
+  const configService = app.get(ConfigService);
+
   const microservice =
     await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
       transport: Transport.RMQ,
       options: {
-        urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
+        urls: [configService.get<string>('RABBITMQ_URL')],
         queue: 'quiz_queue',
         queueOptions: {
           durable: false,

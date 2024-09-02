@@ -4,21 +4,27 @@ import { QuizGameResolver } from './quiz.resolver';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { QuizController } from './quiz.controller';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     PrismaModule,
-    ClientsModule.register([
+    ConfigModule,
+    ClientsModule.registerAsync([
       {
         name: 'VOUCHER_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
-          queue: 'voucher_queue',
-          queueOptions: {
-            durable: false,
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'voucher_queue',
+            queueOptions: {
+              durable: false,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

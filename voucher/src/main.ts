@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,10 +13,12 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
+  const configService = app.get(ConfigService);
+
   const microservice = app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
+      urls: [configService.get<string>('RABBITMQ_URL')],
       queue: 'voucher_queue',
       queueOptions: {
         durable: false,
@@ -24,7 +27,7 @@ async function bootstrap() {
   });
 
   microservice.listen();
-  await app.listen(3000);
+  await app.listen(3004);
 
   console.log('Voucher Microservice is listening');
   console.log(`Application is running on: ${await app.getUrl()}`);

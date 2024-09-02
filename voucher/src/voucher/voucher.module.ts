@@ -3,31 +3,41 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { VoucherService } from './voucher.service';
 import { VoucherResolver } from './voucher.resolver';
 import { VoucherController } from './voucher.controller';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ConfigModule.forRoot({ isGlobal: true }),
+    ClientsModule.registerAsync([
       {
         name: 'QUIZ_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
-          queue: 'quiz_queue',
-          queueOptions: {
-            durable: false,
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'quiz_queue',
+            queueOptions: {
+              durable: false,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
       {
         name: 'SHAKE_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
-          queue: 'shake_queue',
-          queueOptions: {
-            durable: false,
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'shake_queue',
+            queueOptions: {
+              durable: false,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

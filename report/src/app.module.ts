@@ -7,6 +7,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
+import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
+import responseCachePlugin from '@apollo/server-plugin-response-cache';
+import { KeyvAdapter } from '@apollo/utils.keyvadapter';
+import Keyv from 'keyv';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
@@ -20,8 +25,17 @@ import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
         autoSchemaFile: true,
         playground: false,
         debug: true,
-        plugins: [ApolloServerPluginLandingPageLocalDefault()],
         introspection: true,
+        plugins: [
+          ApolloServerPluginCacheControl({ defaultMaxAge: 6 }),
+          responseCachePlugin(),
+          ApolloServerPluginLandingPageLocalDefault(),
+        ],
+        cache: new KeyvAdapter(
+          new Keyv({
+            store: new KeyvRedis(configService.get<string>('REDIS_URL')),
+          }),
+        ),
       }),
       inject: [ConfigService],
     }),

@@ -9,51 +9,46 @@ import { AnswerModule } from './answer/answer.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
-import { ProducerModule } from './producer/producer.module';
-import { ConsumerModule } from './consumer/consumer.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
-// import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigModule and ConfigService
+import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
+import responseCachePlugin from '@apollo/server-plugin-response-cache';
+import { KeyvAdapter } from '@apollo/utils.keyvadapter';
+import Keyv from 'keyv';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
-    // ClientsModule.register([
-    // {
-    //   name: 'AUTH_SERVICE',
-    //   transport: Transport.RMQ,
-    //   options: {
-    //     urls: ['amqp://localhost:5672'],
-    //     queue: 'auth_queue',
-    //     queueOptions: {
-    //       durable: false,
-    //     },
-    //   },
-    // },
-    // {
-    //   name: 'QUIZ_SERVICE',
-    //   transport: Transport.RMQ,
-    //   options: {
-    //     urls: ['amqp://localhost:5672'],
-    //     queue: 'quiz_queue',
-    //     queueOptions: {
-    //       durable: false,
-    //     },
-    //   },
-    // },
-    // ]),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
+      imports: [ConfigModule],
       driver: ApolloDriver,
-      autoSchemaFile: true,
-      playground: false,
-      introspection: true,
-      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      useFactory: async (configService: ConfigService) => ({
+        autoSchemaFile: true,
+        playground: false,
+        introspection: true,
+        debug: true,
+        plugins: [
+          ApolloServerPluginCacheControl({ defaultMaxAge: 6 }),
+          responseCachePlugin(),
+          ApolloServerPluginLandingPageLocalDefault(),
+        ],
+        cache: new KeyvAdapter(
+          new Keyv({
+            store: new KeyvRedis(configService.get<string>('REDIS_URL')),
+          }),
+        ),
+      }),
+      inject: [ConfigService],
     }),
     QuizModule,
     QuestionModule,
     AnswerModule,
     PrismaModule,
-    ProducerModule,
-    ConsumerModule,
+
     RedisCacheModule,
     AuthModule,
   ],
