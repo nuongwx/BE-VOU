@@ -4,7 +4,7 @@ import { Game } from './entities/game.entity';
 import { CreateGameInput } from './dto/create-game.input';
 import { UpdateGameInput } from './dto/update-game.input';
 import { Item } from 'src/item/entities/item.entity';
-import { ItemService } from 'src/item/item.service';
+// import { ItemService } from 'src/item/item.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ShakeUser } from 'src/user/entities/user.entity';
 
@@ -21,8 +21,11 @@ export class GameResolver {
   }
 
   @Query(() => [Game], { name: 'games' })
-  findAll() {
-    return this.gameService.findAll();
+  findAll(
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+  ) {
+    return this.gameService.findAll(limit, offset);
   }
 
   @Query(() => Game, { name: 'game' })

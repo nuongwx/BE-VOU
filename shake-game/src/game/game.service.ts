@@ -24,8 +24,15 @@ export class GameService {
     });
   }
 
-  findAll() {
-    return this.prisma.game.findMany();
+  async findAll(limit?: number, offset?: number) {
+    try {
+      return await this.prisma.game.findMany({
+        take: limit ?? undefined,
+        skip: offset ?? undefined,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error finding games');
+    }
   }
 
   findOne(id: number) {

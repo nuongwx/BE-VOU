@@ -19,9 +19,11 @@ export class QuizGameResolver {
   }
 
   @Query(() => [QuizGameEntity], { name: 'quizGames' })
-  // @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.quizGameService.findAll();
+  findAll(
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+  ) {
+    return this.quizGameService.findAll(limit, offset);
   }
 
   @Query(() => QuizGameEntity, { name: 'quizGame' })

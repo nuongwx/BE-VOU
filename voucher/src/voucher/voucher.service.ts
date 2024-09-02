@@ -341,8 +341,7 @@ export class VoucherService {
     }
   }
 
-  async findExpiredVoucher()
-  {
+  async findExpiredVoucher() {
     try {
       return await this.prisma.voucher.findMany({
         where: {
@@ -354,8 +353,7 @@ export class VoucherService {
     }
   }
 
-  async findValidVoucher()
-  {
+  async findValidVoucher() {
     try {
       return await this.prisma.voucher.findMany({
         where: {
@@ -367,8 +365,7 @@ export class VoucherService {
     }
   }
 
-  async findUsedVoucher()
-  {
+  async findUsedVoucher() {
     try {
       return await this.prisma.voucher.findMany({
         where: {

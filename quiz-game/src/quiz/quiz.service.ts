@@ -27,11 +27,13 @@ export class QuizGameService {
     }
   }
 
-  async findAll() {
+  async findAll(limit?: number, offset?: number) {
     try {
       return await this.prisma.quizGame.findMany({
         where: { isDeleted: false },
         include: { questions: true },
+        take: limit ?? undefined,
+        skip: offset ?? undefined,
       });
     } catch (error) {
       throw new InternalServerErrorException('Error finding quiz games');

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateEventInput } from './dto/create-event.input';
 import { UpdateEventInput } from './dto/update-event.input';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -13,8 +13,15 @@ export class EventService {
     });
   }
 
-  findAll() {
-    return this.prisma.event.findMany();
+  async findAll(limit?: number, offset?: number) {
+    try {
+      return await this.prisma.event.findMany({
+        take: limit ?? undefined,
+        skip: offset ?? undefined,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error finding events');
+    }
   }
 
   findOne(id: number) {
