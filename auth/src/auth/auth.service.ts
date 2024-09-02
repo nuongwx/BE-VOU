@@ -1,6 +1,10 @@
-import { ForbiddenException, Inject, Injectable, BadRequestException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  BadRequestException,
+} from '@nestjs/common';
 import { SignUpInput } from './dto/signUp-input';
-import { UpdateAuthInput } from './dto/update-auth.input';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,63 +25,81 @@ export class AuthService {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
     },
-    });
+  });
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private firebaseAdminService: FirebaseAdminService
+    private firebaseAdminService: FirebaseAdminService,
   ) {}
 
   async signUp(signUpInput: SignUpInput) {
     const hashedPassword = await argon.hash(signUpInput.password);
+
+    // await admin.auth().createUser({
+    //     email: signUpInput.email,
+    //     password: signUpInput.password,
+    // });
+    const userExists = await this.prisma.user.findUnique({ where: { email: signUpInput.email } });
+    if (userExists) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    const userRole = signUpInput.role === 'staff' ? 'staff' : 'player';
     const user = await this.prisma.user.create({
       data: {
-        userName: signUpInput.userName,
         email: signUpInput.email,
         hashedPassword,
-        phoneNumber: signUpInput.phoneNumber,
+        role: userRole,
         isActive: false,
-        role: 'player',
-        OTP_method: 'email',
-        sex: 'male',
-        dateOfBirth: new Date(),
         name: '',
       },
     });
 
-    try {
-      const userRecord = await admin.auth().createUser({
-        phoneNumber: signUpInput.phoneNumber,
-      });
-      return { otpSession: userRecord.uid };
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      throw new Error('Failed to send OTP');
-    }
+    await admin.auth().createUser({
+      email: signUpInput.email,
+    });
+
+    const { accessToken, refreshToken } = await this.createTokens(
+      user.id,
+      user.email,
+    );
+
+    return { accessToken, refreshToken, user };
+
+    // try {
+    //   const userRecord = await admin.auth().createUser({
+    //     phoneNumber: signUpInput.phoneNumber,
+    //   });
+    //   return { otpSession: userRecord.uid };
+    // } catch (error) {
+    //   console.error('Error sending OTP:', error);
+    //   throw new Error('Failed to send OTP');
+    // }
   }
 
-  
-
-  async verifyOtp(phoneNumber: string, otpSession: string, otpCode: string) {
-    try {
-      const userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber);
-      if (userRecord.uid === otpSession) {
-        // Assuming otpCode is correct (you should verify it in production)
-        await this.prisma.user.update({
-          where: { phoneNumber },
-          data: { isActive: true },
-        });
-
-        return { message: 'OTP verified successfully' };
-      } else {
-        throw new BadRequestException('Invalid OTP');
-      }
-    } catch (error) {
-      console.error('Error verifying OTP:', error);
-      throw new BadRequestException('Invalid OTP');
+  async verifyPhone(phoneNumber: string, userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { phoneNumber } });
+    if (user && user.id !== userId) {
+      throw new BadRequestException('Phone number already linked');
     }
+
+    const firebaseUser = await admin.auth().getUserByPhoneNumber(phoneNumber);
+    if (!firebaseUser) {
+      throw new BadRequestException('Phone number not found');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        phoneNumber: phoneNumber,
+        isActive: true,
+        firebaseUID: firebaseUser.uid,
+      },
+    });
+
+    return user;
   }
 
   async signIn(signInInput: SignInInput) {
@@ -87,29 +109,31 @@ export class AuthService {
     if (!user) {
       throw new ForbiddenException('Access Denied');
     }
-    const doPasswordsMatch = await argon.verify(user.hashedPassword, signInInput.password);
+    const doPasswordsMatch = await argon.verify(
+      user.hashedPassword,
+      signInInput.password,
+    );
     if (!doPasswordsMatch) {
       throw new ForbiddenException('Access Denied');
     }
     const { accessToken, refreshToken } = await this.createTokens(
       user.id,
-      user.email
+      user.email,
     );
-    await this.updateRefreshToken(user.id, refreshToken);
     return { accessToken, refreshToken, user };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+  //   findOne(id: number) {
+  //     return `This action returns a #${id} auth`;
+  //   }
 
-  update(id: number, updateAuthInput: UpdateAuthInput) {
-    return `This action updates a #${id} auth`;
-  }
+  //   update(id: number, updateAuthInput: UpdateAuthInput) {
+  //     return `This action updates a #${id} auth`;
+  //   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+  //   remove(id: number) {
+  //     return `This action removes a #${id} auth`;
+  //   }
 
   async createTokens(userId: number, email: string) {
     const accessToken = this.jwtService.sign(
@@ -118,9 +142,9 @@ export class AuthService {
         email,
       },
       {
-        expiresIn: '10s',
+        expiresIn: '5s',
         secret: this.configService.get('ACCESS_TOKEN_SECRET'),
-      }
+      },
     );
     const refreshToken = this.jwtService.sign(
       {
@@ -131,12 +155,9 @@ export class AuthService {
       {
         expiresIn: '7d',
         secret: this.configService.get('REFRESH_TOKEN_SECRET'),
-      }
+      },
     );
-    return { accessToken, refreshToken };
-  }
 
-  async updateRefreshToken(userId: number, refreshToken: string) {
     const hashedRefreshToken = await argon.hash(refreshToken);
     await this.prisma.user.update({
       where: { id: userId },
@@ -144,24 +165,56 @@ export class AuthService {
         hashedRefreshToken,
       },
     });
+    return { accessToken, refreshToken };
+  }
+
+  async updateRefreshToken(oldAccessToken: string, oldRefreshToken: string) {
+    const payload = this.jwtService.verify(oldRefreshToken, {
+      secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+    });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.userId },
+    });
+    if (!user || !user.hashedRefreshToken) {
+      throw new ForbiddenException('Access Denied: User not found');
+    }
+    const isRefreshTokenValid = await argon.verify(
+      user.hashedRefreshToken,
+      oldRefreshToken,
+    );
+    if (!isRefreshTokenValid) {
+      throw new ForbiddenException('Access Denied: Invalid refresh token');
+    }
+    const { accessToken, refreshToken } = await this.createTokens(
+      user.id,
+      user.email,
+    );
+    if (oldAccessToken !== payload.accessToken) {
+      throw new ForbiddenException('Access Denied: Invalid access token');
+    }
+    return { accessToken, refreshToken, user };
   }
 
   async logOut(userId: number) {
-    await this.prisma.user.updateMany({
-      where: {
-        id: userId,
-        hashedRefreshToken: { not: null },
-      },
-      data: {
-        hashedRefreshToken: null,
-      },
-    });
+    await this.prisma.user
+      .update({
+        where: {
+          id: userId,
+          hashedRefreshToken: { not: null },
+        },
+        data: {
+          hashedRefreshToken: null,
+        },
+      })
+      .catch(() => {
+        throw new ForbiddenException('Access Denied');
+      });
     return { loggedOut: true };
   }
 
   async facebookLogin(req) {
     if (!req.user) {
-      throw new ForbiddenException("No user from Facebook");
+      throw new ForbiddenException('No user from Facebook');
     }
 
     const { email, firstName, lastName } = req.user;
@@ -171,14 +224,14 @@ export class AuthService {
         data: {
           email,
           userName: `${firstName} ${lastName}`,
-          OTP_method: "email", // Placeholder for the OTP method
-          role: "player", // Placeholder for the role
+          OTP_method: 'email', // Placeholder for the OTP method
+          role: 'player', // Placeholder for the role
           isActive: true, // Placeholder for the isActive
-          name: "", // Placeholder for the name
+          name: '', // Placeholder for the name
           dateOfBirth: new Date(), // Placeholder for the dateOfBirth
-          sex: "male", // Placeholder for the sex
-          phoneNumber: "",
-          hashedPassword: ""
+          sex: 'male', // Placeholder for the sex
+          phoneNumber: '',
+          hashedPassword: '',
         },
       });
     }
@@ -187,7 +240,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     return {
-      message: "User information from Facebook",
+      message: 'User information from Facebook',
       user,
       accessToken,
     };
@@ -230,6 +283,14 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
+
     return { email };
   }
 
@@ -256,5 +317,14 @@ export class AuthService {
     });
 
     return { message: 'Password reset successfully' };
+  }
+
+  async validateToken(token: string) {
+    try {
+      const user = this.jwtService.verify(token);
+      return { user, valid: true };
+    } catch (error) {
+      return { valid: false };
+    }
   }
 }

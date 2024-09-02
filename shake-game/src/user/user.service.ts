@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserInput } from './dto/create-user.input';
-import { UpdateUserInput } from './dto/update-user.input';
+import { CreateShakeUserInput } from './dto/create-user.input';
+import { UpdateShakeUserInput } from './dto/update-user.input';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createUserInput: CreateUserInput) {
+  async create(createUserInput: CreateShakeUserInput) {
     const lives = await this.prisma.game
       .findUniqueOrThrow({
         where: {
@@ -15,6 +15,17 @@ export class UserService {
         },
       })
       .then((game) => game.lives);
+
+    const exist = await this.prisma.user.findFirst({
+      where: {
+        authUserId: createUserInput.authUserId,
+        gameId: createUserInput.gameId,
+      },
+    });
+
+    if (exist) {
+      return exist;
+    }
 
     return this.prisma.user.create({
       // connect to game
@@ -28,6 +39,7 @@ export class UserService {
           create: {},
         },
         lives: lives,
+        authUserId: createUserInput.authUserId,
       },
     });
   }
@@ -42,7 +54,7 @@ export class UserService {
     });
   }
 
-  update(id: number, updateUserInput: UpdateUserInput) {
+  update(id: number, updateUserInput: UpdateShakeUserInput) {
     return this.prisma.user.update({
       where: { id },
       data: {

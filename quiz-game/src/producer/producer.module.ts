@@ -9,7 +9,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'QUIZ_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
+          urls: ['amqp://localhost:5672'],
           queue: 'quiz-queue',
         },
       },

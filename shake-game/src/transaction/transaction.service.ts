@@ -67,40 +67,40 @@ export class TransactionService {
       throw new Error('Sender does not have the item');
     }
 
-    return this.prisma.transaction
-      .create({
-        data: {
-          InventoryItem: {
-            connect: {
-              id: createTransactionInput.itemId,
-            },
-          },
-          Sender: {
-            connect: {
-              id: sender.id,
-            },
-          },
-          Receiver: {
-            connect: {
-              id: receiver.id,
-            },
-          },
-        },
-      })
-      .then(() => {
-        return this.prisma.inventoryItem.update({
-          where: {
+    const transaction = await this.prisma.transaction.create({
+      data: {
+        InventoryItem: {
+          connect: {
             id: createTransactionInput.itemId,
           },
-          data: {
-            Inventory: {
-              connect: {
-                id: receiverInventory.id,
-              },
-            },
+        },
+        Sender: {
+          connect: {
+            id: sender.id,
           },
-        });
-      });
+        },
+        Receiver: {
+          connect: {
+            id: receiver.id,
+          },
+        },
+      },
+    });
+
+    const updatedSenderItem = await this.prisma.inventoryItem.update({
+      where: {
+        id: createTransactionInput.itemId,
+      },
+      data: {
+        Inventory: {
+          connect: {
+            id: receiverInventory.id,
+          },
+        },
+      },
+    });
+
+    return transaction;
   }
 
   findAll() {

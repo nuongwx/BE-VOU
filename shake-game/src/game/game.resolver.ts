@@ -6,7 +6,7 @@ import { UpdateGameInput } from './dto/update-game.input';
 import { Item } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from 'src/user/entities/user.entity';
+import { ShakeUser } from 'src/user/entities/user.entity';
 
 @Resolver(() => Game)
 export class GameResolver {
@@ -53,7 +53,7 @@ export class GameResolver {
     });
   }
 
-  @ResolveField('users', () => [User], { description: 'Game Users' })
+  @ResolveField('users', () => [ShakeUser], { description: 'Game Users' })
   users(@Parent() game: Game) {
     return this.prisma.user.findMany({
       where: {

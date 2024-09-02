@@ -1,0 +1,56 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../node_modules/@prisma-event-db/client"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("EVENT_DATABASE_URL")
+}
+
+model Event {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String
+  beginAt     DateTime
+  endAt       DateTime
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  status      EventStatus @default(INACTIVE)
+  imageUrl    String      @default("")
+  favourite   Favourite[]
+  posts       Post[]
+}
+
+model Post {
+  id        Int        @id @default(autoincrement())
+  title     String
+  content   String
+  status    PostStatus @default(DRAFT)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  eventId   Int?
+  imageUrl  String     @default("")
+  event     Event?     @relation(fields: [eventId], references: [id])
+}
+
+model Favourite {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  eventId   Int
+  userId    Int
+  event     Event    @relation(fields: [eventId], references: [id])
+}
+
+enum EventStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PostStatus {
+  PUBLISHED
+  DRAFT
+  ARCHIVED
+}

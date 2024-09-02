@@ -87,7 +87,7 @@ export class RequestService {
         id,
       },
       data: {
-        isAccepted: true,
+        isAccepted: updateRequestInput.isAccepted,
       },
     });
   }

@@ -18,15 +18,7 @@ function extendPrismaClient() {
       },
     },
     model: {
-      $allModels: {
-        async $allOperations({ operation, model, args, query }) {
-          const start = performance.now();
-          const result = await query(args);
-          const end = performance.now();
-          const time = end - start;
-          logger.debug(`${model}.${operation} took ${time}ms`);
-          return result;
-        },
+      inventoryItem: {
         async delete<M, A>(this: M, where: Prisma.Args<M, 'delete'>): Promise<Prisma.Result<M, A, 'update'>> {
           const context = Prisma.getExtensionContext(this);
 
@@ -54,6 +46,23 @@ function extendPrismaClient() {
       },
     },
     query: {
+      $allModels: {
+        async $allOperations({ operation, model, args, query }) {
+          // const start = performance.now();
+          const result = await query(args);
+          // const end = performance.now();
+          // const time = end - start;
+          // // logger.debug(`${model}.${operation} took ${time}ms`);
+          // if (
+          //   operation.search('create') !== -1 ||
+          //   operation.search('update') !== -1 ||
+          //   operation.search('delete') !== -1
+          // ) {
+          //   logger.debug(`${model}.${operation} took ${time}ms`);
+          // }
+          return result;
+        },
+      },
       inventoryItem: {
         // used in inventory.resolver.ts
         async findMany({ args, query }) {
@@ -72,8 +81,23 @@ const ExtendedPrismaClient = class {
   }
 } as new () => ReturnType<typeof extendPrismaClient>;
 
+declare const globalThis: {
+  prismaGlobal: ReturnType<typeof extendPrismaClient>;
+} & typeof global;
+
+const prisma = globalThis.prismaGlobal ?? new ExtendedPrismaClient();
 @Injectable()
-export class PrismaService extends ExtendedPrismaClient {}
+export class PrismaService extends ExtendedPrismaClient {
+  constructor() {
+    super();
+
+    if (globalThis.prismaGlobal === undefined) {
+      globalThis.prismaGlobal = prisma;
+    }
+
+    return prisma;
+  }
+}
 
 @Global()
 @Module({

@@ -4,6 +4,7 @@ import { QuizGameQuestionEntity } from './entities/question.entity';
 import { CreateQuestionInput } from './dto/create-question.input';
 import { UpdateQuestionInput } from './dto/update-question.input';
 import GraphQLJSON from 'graphql-type-json';
+import { QuizGameAnswerEntity } from '../answer/entities/answer.entity';
 
 @Resolver(() => QuizGameQuestionEntity)
 export class QuestionResolver {
@@ -42,14 +43,17 @@ export class QuestionResolver {
   }
 
   @Query(() => [QuizGameQuestionEntity], { name: 'generateRandomQuestions' })
-  generateRandomQuestions(@Args('length', { type: () => Int }) length: number) {
-    return this.questionService.generateRandomQuestions(length);
+  generateRandomQuestions(
+    @Args('length', { type: () => Int }) length: number,
+    @Args('quizGameId', { type: () => Int }) quizGameId: number,
+  ) {
+    return this.questionService.generateRandomQuestions(quizGameId, length, []);
   }
 
   @Query(() => Boolean, { name: 'checkAnswer' })
   checkAnswer(
     @Args('questionId', { type: () => Int }) questionId: number,
-    @Args('answer', { type: () => GraphQLJSON }) answer: any,
+    @Args('answer', { type: () => GraphQLJSON }) answer: QuizGameAnswerEntity,
   ) {
     return this.questionService.checkAnswer(questionId, answer);
   }

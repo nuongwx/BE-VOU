@@ -9,12 +9,10 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  app.enableCors(
-    {
-      origin: 'http://localhost:3000', 
-      credentials: true,
-    }
-  )
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+  });
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
@@ -22,7 +20,7 @@ async function bootstrap() {
       saveUninitialized: false,
     }),
   );
-  
+
   app.use(passport.initialize());
   app.use(passport.session());
 

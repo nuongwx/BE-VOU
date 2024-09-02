@@ -4,7 +4,7 @@ import { Request } from './entities/request.entity';
 import { CreateRequestInput } from './dto/create-request.input';
 import { UpdateRequestInput } from './dto/update-request.input';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from 'src/user/entities/user.entity';
+import { ShakeUser } from 'src/user/entities/user.entity';
 
 @Resolver(() => Request)
 export class RequestResolver {
@@ -38,7 +38,7 @@ export class RequestResolver {
     return this.requestService.remove(id);
   }
 
-  @ResolveField('sender', () => User, { description: 'Request Sender' })
+  @ResolveField('sender', () => ShakeUser, { description: 'Request Sender' })
   sender(@Parent() request: Request) {
     return this.prisma.user.findUniqueOrThrow({
       where: {
@@ -47,7 +47,7 @@ export class RequestResolver {
     });
   }
 
-  @ResolveField('receiver', () => User, { description: 'Request Receiver' })
+  @ResolveField('receiver', () => ShakeUser, { description: 'Request Receiver' })
   receiver(@Parent() request: Request) {
     return this.prisma.user.findUniqueOrThrow({
       where: {

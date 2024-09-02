@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateGameInput } from './dto/create-game.input';
 import { UpdateGameInput } from './dto/update-game.input';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { firstValueFrom } from 'rxjs';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class GameService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject('VOUCHER_SERVICE') private readonly voucherClient: ClientProxy,
+  ) {}
 
   create(createGameInput: CreateGameInput) {
     return this.prisma.game.create({
@@ -44,6 +49,31 @@ export class GameService {
 
   remove(id: number) {
     return this.prisma.game.delete({
+      where: { id },
+    });
+  }
+
+  async assignVoucherForWinnerUser(shakeGameId: number, userId: number) {
+    try {
+      const shakeGame = await this.prisma.game.findUnique({
+        where: { id: shakeGameId, isDeleted: false },
+        select: { eventId: true },
+      });
+
+      const eventId = shakeGame.eventId;
+
+      const result = await firstValueFrom(
+        this.voucherClient.send({ cmd: 'assign_voucher_to_user' }, { eventId, userId }),
+      );
+
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Error assigning voucher');
+    }
+  }
+
+  async getShakeGameById(id: number) {
+    return await this.prisma.game.findUnique({
       where: { id },
     });
   }

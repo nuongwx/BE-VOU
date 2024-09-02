@@ -7,13 +7,14 @@ import { PostModule } from './post/post.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
-import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
-import responseCachePlugin from '@apollo/server-plugin-response-cache';
-import { KeyvAdapter } from '@apollo/utils.keyvadapter';
+// import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
+// import responseCachePlugin from '@apollo/server-plugin-response-cache';
+// import { KeyvAdapter } from '@apollo/utils.keyvadapter';
 import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
-import Keyv from 'keyv';
+// import Keyv from 'keyv';
 import { PrismaModule } from './prisma/prisma.module';
-import KeyvRedis from '@keyv/redis';
+// import KeyvRedis from '@keyv/redis';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -28,11 +29,11 @@ import KeyvRedis from '@keyv/redis';
         playground: false,
         debug: true,
         plugins: [
-          ApolloServerPluginCacheControl({ defaultMaxAge: 6 }),
-          responseCachePlugin(),
+          // ApolloServerPluginCacheControl({ defaultMaxAge: 6 }),
+          // responseCachePlugin(),
           ApolloServerPluginLandingPageLocalDefault(),
         ],
-        cache: new KeyvAdapter(new Keyv({ store: new KeyvRedis(configService.get('REDIS_URL')) })),
+        // cache: new KeyvAdapter(new Keyv({ store: new KeyvRedis(configService.get('REDIS_URL')) })),
         introspection: true,
         csrfPrevention: false,
       }),
@@ -42,7 +43,7 @@ import KeyvRedis from '@keyv/redis';
     EventModule,
     FavouriteModule,
     PostModule,
-    // UploadModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

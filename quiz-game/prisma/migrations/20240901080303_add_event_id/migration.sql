@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "QuizGame" ADD COLUMN     "eventId" INTEGER NOT NULL DEFAULT 0;

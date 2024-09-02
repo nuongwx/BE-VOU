@@ -12,8 +12,8 @@ export class Transaction {
   @Field(() => Int, { description: 'Inventory Item Id' })
   inventoryItemId: number;
 
-  @Field(() => Int, { description: 'Quantity' })
-  quantity: number;
+  // @Field(() => Int, { description: 'Quantity' })
+  // quantity: number;
 
   @Field(() => Int, { description: 'Sender Id' })
   senderId: number;
@@ -26,4 +26,7 @@ export class Transaction {
 
   // @Field(() => User, { description: 'Receiver' })
   // receiver: User;
+
+  @Field(() => Date, { description: 'Created At' })
+  createdAt: Date;
 }
