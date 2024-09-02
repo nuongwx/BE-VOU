@@ -7,17 +7,6 @@ import { VoucherController } from './voucher.controller';
 @Module({
   imports: [
     ClientsModule.register([
-      // {
-      //   name: 'VOUCHER_SERVICE',
-      //   transport: Transport.RMQ,
-      //   options: {
-      //     urls: ['amqp://localhost:5672'],
-      //     queue: 'voucher_queue',
-      //     queueOptions: {
-      //       durable: false,
-      //     },
-      //   },
-      // },
       {
         name: 'QUIZ_SERVICE',
         transport: Transport.RMQ,
@@ -29,17 +18,17 @@ import { VoucherController } from './voucher.controller';
           },
         },
       },
-      // {
-      //   name: 'SHAKE_SERVICE',
-      //   transport: Transport.RMQ,
-      //   options: {
-      //     urls: ['amqp://localhost:5672'],
-      //     queue: 'shake_queue',
-      //     queueOptions: {
-      //       durable: false,
-      //     },
-      //   },
-      // },
+      {
+        name: 'SHAKE_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://localhost:5672'],
+          queue: 'shake_queue',
+          queueOptions: {
+            durable: false,
+          },
+        },
+      },
     ]),
   ],
   controllers: [VoucherController],

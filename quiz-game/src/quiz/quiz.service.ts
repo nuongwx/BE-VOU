@@ -173,7 +173,7 @@ export class QuizGameService {
 
   async getQuizGameById(id: number) {
     return await this.prisma.quizGame.findUnique({
-      where: { id },
+      where: { id, isDeleted: false },
     });
   }
 }

@@ -8,7 +8,6 @@ export class QuizController {
 
   @MessagePattern({ cmd: 'get_quiz_game_by_id' })
   async getQuizGameById(data: { id: number }) {
-    console.log('---- getQuizGameById', data);
     return this.quizService.getQuizGameById(data.id);
   }
 }

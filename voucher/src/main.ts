@@ -12,20 +12,21 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  // const microserviceRabbitmq = app.connectMicroservice<MicroserviceOptions>({
-  //   transport: Transport.RMQ,
-  //   options: {
-  //     urls: ['amqp://localhost:5672'],
-  //     queue: 'voucher_queue',
-  //     queueOptions: {
-  //       durable: false,
-  //     },
-  //   },
-  // });
+  const microservice = app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: ['amqp://localhost:5672'],
+      queue: 'voucher_queue',
+      queueOptions: {
+        durable: false,
+      },
+    },
+  });
 
-  await app.startAllMicroservices();
+  microservice.listen();
   await app.listen(3000);
 
+  console.log('Voucher Microservice is listening');
   console.log(`Application is running on: ${await app.getUrl()}`);
   console.log(`GraphQL Playground: ${await app.getUrl()}/graphql`);
 }

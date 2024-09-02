@@ -3,6 +3,7 @@ import { QuizGameService } from './quiz.service';
 import { QuizGameResolver } from './quiz.resolver';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { QuizController } from './quiz.controller';
 
 @Module({
   imports: [
@@ -19,19 +20,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           },
         },
       },
-      // {
-      //   name: 'QUIZ_SERVICE',
-      //   transport: Transport.RMQ,
-      //   options: {
-      //     urls: ['amqp://localhost:5672'],
-      //     queue: 'quiz_queue',
-      //     queueOptions: {
-      //       durable: false,
-      //     },
-      //   },
-      // },
     ]),
   ],
+  controllers: [QuizController],
   providers: [QuizGameResolver, QuizGameService],
 })
 export class QuizModule {}

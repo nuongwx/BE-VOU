@@ -112,32 +112,10 @@ export class VoucherResolver {
     return this.voucherService.getVoucherFromQuiz(quizGameId);
   }
 
-  // @Query(() => Voucher, { name: 'getVoucherFromShake' })
-  // async getVoucherFromShake(
-  //   @Args('shakeGameId', { type: () => Int }) shakeGameId: number,
-  // ) {
-  //   return this.voucherService.getVoucherFromShake(shakeGameId);
-  // }
-
-  @Query(() => [VoucherLine], { name: 'getAllVouchersByUser' })
-  async getAllVouchersByUser(
-    @Args('userId', { type: () => Int }) userId: number,
+  @Query(() => Voucher, { name: 'getVoucherFromShake' })
+  async getVoucherFromShake(
+    @Args('shakeGameId', { type: () => Int }) shakeGameId: number,
   ) {
-    return this.voucherService.getAllVouchersByUser(userId);
-  }
-
-  @Query(() => Voucher, { name: 'getOneVoucher' })
-  async getOneVoucher(
-    @Args('voucherId', { type: () => Int }) voucherId: number,
-  ) {
-    return this.voucherService.getOneVoucher(voucherId);
-  }
-
-  @Mutation(() => Voucher, { name: 'updateVoucherStatus' })
-  async updateVoucherStatus(
-    @Args('voucherId', { type: () => Int }) voucherId: number,
-    @Args('status', { type: () => String }) status: VoucherStatus,
-  ) {
-    return this.voucherService.updateVoucherStatus(voucherId, status);
+    return this.voucherService.getVoucherFromShake(shakeGameId);
   }
 }
