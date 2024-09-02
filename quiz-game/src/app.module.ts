@@ -17,6 +17,7 @@ import responseCachePlugin from '@apollo/server-plugin-response-cache';
 import { KeyvAdapter } from '@apollo/utils.keyvadapter';
 import Keyv from 'keyv';
 import KeyvRedis from '@keyv/redis';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
