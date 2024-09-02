@@ -9,7 +9,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'VOUCHER_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: ['amqp://ngwx:1@ngwx.mooo.com:5672/default'],
           queue: 'auth_queue',
         },
       },
