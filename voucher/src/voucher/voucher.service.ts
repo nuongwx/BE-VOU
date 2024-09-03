@@ -509,4 +509,17 @@ export class VoucherService {
 
     return voucher;
   }
+
+  async getValidVoucherByBrand(brandId: number) {
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          brandId: { has: brandId }, 
+          status: VoucherStatus.VALID,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving vouchers');
+    }
+  }
 }
