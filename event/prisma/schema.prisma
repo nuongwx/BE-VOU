@@ -27,6 +27,7 @@ model Event {
   endAt       DateTime
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  brands      Int[]       @default([])
   status      EventStatus @default(INACTIVE)
   favourite   Favourite[]
   posts       Post[]

@@ -74,4 +74,9 @@ export class EventResolver {
   getAllOngoingEvents() {
     return this.eventService.getAllOngoingEvents();
   }
+
+  @Query(() => [Event], { name: 'getEventByBrandId' })
+  getEventByBrandId(@Args('userId', { type: () => Int }) userId: number) {
+    return this.eventService.getEventByBrandId(userId);
+  }
 }

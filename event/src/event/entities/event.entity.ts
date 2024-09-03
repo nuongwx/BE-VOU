@@ -27,4 +27,7 @@ export class Event {
 
   @Field(() => String, { description: 'Event Image URL' })
   imageUrl: string;
+
+  @Field(() => [Int], { nullable: true }) // point to user id
+  brands: number[];
 }

@@ -71,4 +71,16 @@ export class EventService {
       },
     });
   }
+
+  async getEventByBrandId(userId: number) {
+    const events = await this.prisma.event.findMany({
+      where: {
+        brands: {
+          has: userId,
+        },
+      },
+    });
+
+    return events;
+  }
 }
