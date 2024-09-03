@@ -1,4 +1,4 @@
-import { InputType, Field, registerEnumType } from '@nestjs/graphql';
+import { InputType, Field, registerEnumType, Int } from '@nestjs/graphql';
 import { EventStatus } from '@prisma/client';
 import { Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 
@@ -28,6 +28,9 @@ export class CreateEventInput {
 
   @Field(() => String, { description: 'Event Description', defaultValue: 'No Description' })
   description: string;
+
+  @Field(() => [Int])
+  brands: [number];
 
   @IsBefore('endAt')
   @Field(() => Date, { description: 'Event Begin Date', defaultValue: new Date(0) })
