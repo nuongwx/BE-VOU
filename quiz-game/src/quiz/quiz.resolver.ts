@@ -72,4 +72,10 @@ export class QuizGameResolver {
       questionId,
     );
   }
+
+  @Query(() => [QuizGameEntity], { name: 'findQuizByUser' })
+  // @UseGuards(JwtAuthGuard)
+  findQuizByUser(@Args('userId', { type: () => Int }) userId: number) {
+    return this.quizGameService.findAll(2, 0);
+  }
 }
