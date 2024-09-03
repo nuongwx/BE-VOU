@@ -39,8 +39,8 @@ export class VoucherLine {
   @Field(() => Int)
   voucherId: number;
 
-  @Field(() => String)
-  userId: string;
+  @Field(() => Int)
+  userId: number;
 
   @Field(() => String, { nullable: true })
   qr_code: string;
@@ -57,8 +57,8 @@ export class VoucherTran {
   @Field(() => Int)
   voucherId: number;
 
-  @Field(() => String)
-  userId: string;
+  @Field(() => Int)
+  userId: number;
 
   @Field(() => String, { nullable: true })
   qr_code: string;
