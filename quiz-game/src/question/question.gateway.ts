@@ -4,19 +4,64 @@ import {
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { QuestionService } from './question.service';
-import { Inject } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  CallHandler,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  NestInterceptor,
+  PipeTransform,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, map, Observable } from 'rxjs';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+@Injectable()
+export class SocketAuthInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const socket = context.switchToWs().getClient();
+    const username = socket.id; // TODO: Replace with actual user ID extraction logic from auth token
+    socket.handshake.auth.username = username;
+    return next.handle().pipe(map((data) => ({ username, data })));
+  }
+}
+
+const connectedClients = new Map<string, Socket>();
+const incorrectClients: Set<string> = new Set();
+const correctClients: Set<string> = new Set();
+
+let currentQuestionId = 0;
+let currentQuestionIndex = 0;
+
+const questionAnswerTimeout = 10000;
+const timeBetweenQuestions = 12000;
+
+@Injectable()
+export class TransformInterceptor implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    try {
+      const result = JSON.parse(value);
+      return { ...result, timestamp: Date.now() };
+    } catch (error) {
+      return value;
+    }
+  }
+}
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-export class QuestionGateway {
+@UseInterceptors(SocketAuthInterceptor)
+export class QuestionGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -24,7 +69,200 @@ export class QuestionGateway {
     private readonly questionService: QuestionService,
     @Inject('VOUCHER_SERVICE')
     private readonly voucherServiceClient: ClientProxy,
+    private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly prismaService: PrismaService,
   ) {}
+
+  handleDisconnect(client: Socket) {
+    console.log('Client disconnected', client.id);
+    connectedClients.delete(client.handshake.auth.username);
+  }
+
+  @SubscribeMessage('debug')
+  handleDebug(client: Socket) {
+    console.log('Debug', client.handshake.auth);
+    console.log('Connected clients:', Array.from(connectedClients.keys()));
+  }
+
+  async info() {
+    this.server.emit('broadcast', {
+      totalConnections: this.server.engine.clientsCount,
+    });
+  }
+
+  @SubscribeMessage('registerPlayer')
+  async handleRegisterPlayer(client: Socket, data: string) {
+    const username = client.handshake.auth.username;
+    connectedClients.set(username, client);
+    client.emit('registerPlayerAck', {
+      username,
+      sessionId: client.id,
+    });
+  }
+
+  @SubscribeMessage('startGame')
+  async handleStartGame(@MessageBody() data: { quizGameId: number }) {
+    const { quizGameId } = data;
+
+    try {
+      const quizQuestions = await this.prismaService.quizGameQuestion.findMany({
+        where: {
+          isDeleted: false,
+          quizGames: {
+            some: { quizGameId },
+          },
+        },
+        include: { answers: { where: { isDeleted: false } } },
+      });
+
+      if (quizQuestions.length === 0) {
+        this.server.emit('error', {
+          message: 'No questions found for the specified quiz game.',
+        });
+        return;
+      }
+
+      this.server.emit('startGame', { gameId: quizGameId });
+      console.log('Game started');
+
+      for (let i = 0; i < quizQuestions.length; i++) {
+        this.scheduleQuestionEmission(quizQuestions, i);
+      }
+    } catch (error) {
+      console.error('Error starting game:', error);
+      this.server.emit('error', {
+        message: 'An error occurred while starting the game.',
+      });
+    }
+  }
+
+  scheduleQuestionEmission(quizQuestions, i) {
+    const questionEmitTimeout = setTimeout(() => {
+      correctClients.clear();
+      incorrectClients.clear();
+
+      this.server.emit('newQuestion', {
+        question: quizQuestions[i],
+        answers: quizQuestions[i].answers,
+      });
+
+      currentQuestionId = quizQuestions[i].id;
+      currentQuestionIndex = i;
+
+      this.scheduleQuestionTimeout(quizQuestions[i], i);
+    }, i * timeBetweenQuestions);
+
+    this.schedulerRegistry.addTimeout(
+      `questionEmitTimeout${i}`,
+      questionEmitTimeout,
+    );
+  }
+
+  scheduleQuestionTimeout(question, index) {
+    const questionTimeout = setTimeout(() => {
+      this.server.emit('questionTimeout', { questionId: question.id });
+
+      const questionSummaryTimeout = setTimeout(() => {
+        this.emitResult();
+      }, 1000);
+
+      this.schedulerRegistry.addTimeout(
+        `questionSummaryTimeout${index}`,
+        questionSummaryTimeout,
+      );
+    }, questionAnswerTimeout);
+
+    this.schedulerRegistry.addTimeout(
+      `questionTimeout${index}`,
+      questionTimeout,
+    );
+  }
+
+  @SubscribeMessage('endGame')
+  async handleEndGame() {
+    this.server.emit('endGame', { gameId: currentQuestionIndex });
+    this.schedulerRegistry.getTimeouts().forEach((timeout) => {
+      clearTimeout(timeout);
+    });
+  }
+
+  async emitResult() {
+    const currentQuestion =
+      await this.prismaService.quizGameQuestion.findUnique({
+        where: { id: currentQuestionId },
+        include: { correctAnswer: true },
+      });
+
+    const questionSummary = {
+      questionId: currentQuestionId,
+      correctAnswerId: currentQuestion.correctAnswerId,
+      incorrectCount: incorrectClients.size,
+      correctCount: correctClients.size,
+    };
+
+    for (const [identifier, client] of connectedClients) {
+      const isCorrect = correctClients.has(identifier);
+      client.emit('result', {
+        correct: isCorrect,
+        message:
+          !isCorrect && !incorrectClients.has(identifier)
+            ? 'No answer submitted'
+            : '',
+        questionSummary,
+      });
+      console.log(isCorrect ? 'Correct' : 'Incorrect', identifier);
+    }
+
+    connectedClients.forEach((client, identifier) => {
+      if (!correctClients.has(identifier)) connectedClients.delete(identifier);
+    });
+
+    if (currentQuestionIndex === connectedClients.size - 1) {
+      console.log('Game ended');
+      this.handleEndGame();
+    }
+  }
+
+  @SubscribeMessage('answer')
+  async handleAnswer(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new TransformInterceptor())
+    data: { questionId: number; answerId: number; timestamp: number },
+  ) {
+    const identifier = client.handshake.auth.username;
+
+    if (!connectedClients.has(identifier)) {
+      client.emit('answerAck', { message: 'You are not a registered player' });
+      return;
+    }
+
+    const question = await this.prismaService.quizGameQuestion.findUnique({
+      where: { id: data.questionId },
+      include: { answers: true },
+    });
+
+    if (!question) {
+      client.emit('answerAck', { message: 'Question not found' });
+      return;
+    }
+
+    const answer = question.answers.find((a) => a.id === data.answerId);
+    if (!answer) {
+      client.emit('answerAck', { message: 'Answer not found' });
+      return;
+    }
+
+    client.emit('answerAck', {
+      questionId: data.questionId,
+      answerId: data.answerId,
+    });
+
+    if (question.correctAnswerId === data.answerId) {
+      correctClients.add(identifier);
+    } else {
+      incorrectClients.add(identifier);
+    }
+  }
 
   @SubscribeMessage('submitAnswer')
   async handleSubmitAnswer(
@@ -42,8 +280,6 @@ export class QuestionGateway {
 
     const elapsedTime =
       (currentTime.getTime() - questionShownTime.getTime()) / 1000;
-
-    // Check if answer submission is within the 5-second window
     if (elapsedTime > 5) {
       client.emit('answerTimeout', { message: 'Time limit exceeded' });
       return;
@@ -74,14 +310,12 @@ export class QuestionGateway {
     @ConnectedSocket() client: Socket,
   ) {
     try {
-      const lengthAtEachReq = 1; // 1 request will return 1 question
-      const successRate = 80; // 80% correct answers required to win a voucher
+      const lengthAtEachReq = 1;
+      const successRate = 80;
 
-      // Fetch the total number of questions for the quiz game
       const totalQuestionsCount =
         await this.questionService.getTotalQuestionsCount(data.quizGameId);
 
-      // Check if the user has answered all questions -> check answer -> assign voucher
       if (data.userSelectedAnswerIds.length === totalQuestionsCount) {
         const userSubmit = data.showedQuestionIds.map((questionId, index) => ({
           questionId,
@@ -118,8 +352,6 @@ export class QuestionGateway {
           );
         }
       } else {
-        // User has not answered all questions; generate and send new questions
-
         const questions = await this.questionService.generateRandomQuestions(
           data.quizGameId,
           lengthAtEachReq,
@@ -148,9 +380,7 @@ export class QuestionGateway {
       );
 
       if (assignVoucherResponse.success) {
-        client.emit(eventName, {
-          message: 'Voucher assigned successfully',
-        });
+        client.emit(eventName, { message: 'Voucher assigned successfully' });
       } else {
         client.emit('error', { message: 'Failed to assign voucher' });
       }
@@ -159,7 +389,6 @@ export class QuestionGateway {
     }
   }
 
-  // Function to broadcast a new question to all clients
   async broadcastNewQuestion(questionId: number) {
     const question = await this.questionService.findOne(questionId);
     this.server.emit('newQuestion', question);
