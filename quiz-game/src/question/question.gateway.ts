@@ -21,7 +21,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom, map, Observable } from 'rxjs';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class SocketAuthInterceptor implements NestInterceptor {
