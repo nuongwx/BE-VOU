@@ -7,7 +7,7 @@ import { SignInInput } from 'src/auth/dto/signIn-input';
 import { LogoutResponse } from 'src/auth/dto/logout-response';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UserEntity } from 'src/user/user.entity';
+import { UserEntity } from 'src/user/entities/user.entity';
 import { JwtAuthGuard, JwtRefreshGuard } from 'src/jwt/jwt.strategy';
 
 @Resolver(() => Auth)
