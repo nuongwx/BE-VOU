@@ -9,12 +9,17 @@ import { CreateQuizGameInput } from './dto/create-quiz.input';
 import { UpdateQuizGameInput } from './dto/update-quiz.input';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { InjectFluentFfmpeg, Ffmpeg } from '@mrkwskiti/fluent-ffmpeg-nestjs';
+import { OpenAIService } from '../openai/openai.service';
+import fs from 'fs';
 
 @Injectable()
 export class QuizGameService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject('VOUCHER_SERVICE') private readonly voucherClient: ClientProxy,
+    private readonly openaiService: OpenAIService,
+    @InjectFluentFfmpeg() private readonly ffmpeg: Ffmpeg,
   ) {}
 
   async create(createQuizGameInput: CreateQuizGameInput) {
@@ -281,5 +286,157 @@ export class QuizGameService {
         'Error finding unassigned quiz game',
       );
     }
+  }
+
+  async createAudio(id: number) {
+    if (!fs.existsSync('generated')) {
+      fs.mkdirSync('generated');
+    }
+
+    const questions =
+      await this.prisma.quizGameQuestionToQuizGameMapping.findMany({
+        where: { quizGameId: id },
+        orderBy: { orderIndex: 'asc' },
+        include: {
+          quizGameQuestion: {
+            include: {
+              answers: true,
+            },
+          },
+        },
+      });
+
+    const QUESTION_AUDIO_DURATION = 10;
+    const EXPLAINATION_AUDIO_DURATION = 10;
+
+    const questionsAsks = [];
+    const questionsAnswers = [];
+
+    const result_audio: string[] = [];
+
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+      let result = '';
+      let counter = 1;
+      let answer_counter = 1;
+
+      result += `Question ${i + 1}. ${question.quizGameQuestion.content}`;
+
+      const answers = question.quizGameQuestion.answers;
+
+      answers.forEach((answer) => {
+        result += ` ${answer.content}.`;
+      });
+
+      questionsAsks.push(result);
+
+      result = '';
+
+      let correctAnswer = answers.find(
+        (answer) => answer.id === question.quizGameQuestion.correctAnswerId,
+      );
+
+      if (!correctAnswer) {
+        correctAnswer = answers[0];
+      }
+
+      const correntAnswerIndex = answers.indexOf(correctAnswer);
+
+      result += `The correct answer is [pause] ${String.fromCharCode(
+        65 + correntAnswerIndex,
+      )} - ${correctAnswer.content}.`;
+
+      questionsAnswers.push(result);
+    }
+
+    for (let i = 0; i < questionsAsks.length; i++) {
+      console.log('questionsAsks[i]', questionsAsks[i]);
+      console.log('questionsAnswers[i]', questionsAnswers[i]);
+
+      const questionAudio = await this.openaiService.generateAudio(
+        questionsAsks[i],
+      );
+      // const questionAudio = 'testA.mp3';
+      let questionAudioDuration = 0;
+      await new Promise<void>((resolve, reject) => {
+        this.ffmpeg.ffprobe(questionAudio, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            questionAudioDuration = data.format.duration;
+            resolve();
+          }
+        });
+      });
+
+      const questionExplaination = await this.openaiService.generateAudio(
+        questionsAnswers[i],
+      );
+      // const questionExplaination = 'testB.mp3';
+      let questionExplainationDuration = 0;
+      await new Promise<void>((resolve, reject) => {
+        this.ffmpeg.ffprobe(questionExplaination, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            questionExplainationDuration = data.format.duration;
+            resolve();
+          }
+        });
+      });
+
+      const output = `generated/output${i}.mp3`;
+
+      await new Promise<void>((resolve, reject) => {
+        const ql = this.ffmpeg()
+          .addInput(questionAudio)
+          .addInput(questionExplaination)
+          .complexFilter(
+            `aevalsrc=exprs=0:d=${
+              QUESTION_AUDIO_DURATION -
+              (questionAudioDuration % QUESTION_AUDIO_DURATION)
+            }[silenceQ],
+            aevalsrc=exprs=0:d=${
+              EXPLAINATION_AUDIO_DURATION -
+              (questionExplainationDuration % QUESTION_AUDIO_DURATION)
+            }[silenceA],
+            [0:a] [silenceQ] [1:a] [silenceA] concat=n=4:v=0:a=1[outa]`,
+          )
+          .outputOptions([
+            '-map [outa]',
+            `-t ${QUESTION_AUDIO_DURATION + EXPLAINATION_AUDIO_DURATION}`,
+          ])
+          .saveToFile(output)
+          .on('end', () => {
+            resolve();
+          })
+          .on('error', (err) => {
+            reject(err);
+            throw new InternalServerErrorException('Error creating video');
+          })
+          .run();
+      }).then(() => {
+        result_audio.push(output);
+      });
+    }
+    console.log('result_audio', result_audio);
+
+    const output = `generated/output-game-${id}.mp3`;
+
+    // ffmpeg join audio with each other
+    await new Promise<void>((resolve, reject) => {
+      const ffmpeg = this.ffmpeg()
+        .addInput('concat:' + result_audio.join('|'))
+        .saveToFile(output)
+        .on('end', () => {
+          resolve();
+        })
+        .on('error', (err) => {
+          reject(err);
+          throw new InternalServerErrorException('Error creating video');
+        })
+        .run();
+    });
+    return questionsAsks.join('') + questionsAnswers.join('');
   }
 }

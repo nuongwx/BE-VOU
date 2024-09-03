@@ -5,6 +5,8 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { QuizController } from './quiz.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { OpenAIModule } from '../openai/openai.module';
+import { FluentFfmpegModule } from '@mrkwskiti/fluent-ffmpeg-nestjs';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         inject: [ConfigService],
       },
     ]),
+    OpenAIModule,
+    FluentFfmpegModule.forRoot(),
   ],
   controllers: [QuizController],
   providers: [QuizGameResolver, QuizGameService],

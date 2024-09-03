@@ -83,4 +83,9 @@ export class QuizGameResolver {
   async findQuizGameNotBelongToEvent() {
     return await this.quizGameService.findUnassignedQuizGame();
   }
+
+  @Query(() => String, { name: 'script' })
+  generateScript(@Args('quizGameId', { type: () => Int }) quizGameId: number) {
+    return this.quizGameService.createAudio(quizGameId);
+  }
 }
