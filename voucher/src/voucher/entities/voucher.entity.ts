@@ -10,22 +10,19 @@ export class Voucher {
   name: string;
 
   @Field(() => String, { nullable: true })
-  qr_code: string;
-
-  @Field(() => String, { nullable: true })
   description: string;
 
   @Field(() => Int)
   value: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   eventId: number;
 
   @Field(() => [Int])
   brandId: [number];
 
   @Field(() => [String], { nullable: true })
-  image?: [string];
+  images?: [string];
 
   @Field(() => Date, { nullable: true })
   startTime: Date;
