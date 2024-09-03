@@ -21,9 +21,8 @@ export class VoucherResolver {
   addVoucherToUser(
     @Args('voucherId', { type: () => Int }) voucherId: number,
     @Args('userId', { type: () => Int }) userId: number,
-    @Args('qr_code') qr_code: string,
   ) {
-    return this.voucherService.addVoucherToUser(voucherId, userId, qr_code);
+    return this.voucherService.addVoucherToUser(voucherId, userId);
   }
 
   @Query(() => [Voucher], { name: 'findAllVoucher' })

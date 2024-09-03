@@ -30,7 +30,7 @@ export class VoucherService {
     }
   }
 
-  async addVoucherToUser(voucherId: number, userId: number, qr_code: string) {
+  async addVoucherToUser(voucherId: number, userId: number) {
     try {
       const voucher = await this.prisma.voucher.findUnique({
         where: { id: voucherId },
@@ -38,6 +38,7 @@ export class VoucherService {
 
       // find user here
       const user = true;
+      const qr_code = 'generate qr code here';
 
       if (!voucher || !user) {
         throw new NotFoundException('Invalid input');
