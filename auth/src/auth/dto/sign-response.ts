@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { UserEntity } from '../../user/user.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import {IsNotEmpty, IsString} from 'class-validator';
 
 @ObjectType()

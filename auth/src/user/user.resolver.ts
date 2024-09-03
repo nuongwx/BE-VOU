@@ -1,74 +1,66 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { UserService } from './user.service';
-import { User } from '@prisma/client';
-import { User as UserModel } from './models/user.model';
+import { UserEntity } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/jwt/jwt.strategy';
+// import { UseGuards } from '@nestjs/common';
+// import { JwtAuthGuard } from 'src/jwt/jwt.strategy';
 
-@Resolver(() => UserModel)
+@Resolver(() => UserEntity)
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @Query(() => [UserModel])
-  async getUsers(): Promise<User[]> {
+  @Query(() => [UserEntity])
+  async getUsers() {
     return this.userService.getUsers();
   }
 
-  @Query(() => UserModel, { nullable: true })
-  async getUser(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<User | null> {
+  @Query(() => UserEntity, { nullable: true })
+  async getUser(@Args('id', { type: () => Int }) id: number) {
     return this.userService.getUser(id);
   }
 
-  @Mutation(() => UserModel)
-  async createUser(@Args('data') data: CreateUserInput): Promise<User> {
+  @Mutation(() => UserEntity)
+  async createUser(@Args('data') data: CreateUserInput) {
     return this.userService.createUser(data);
   }
 
-  @Mutation(() => UserModel)
+  @Mutation(() => UserEntity)
   async updateUser(
     @Args('id', { type: () => Int }) id: number,
     @Args('data') data: UpdateUserInput,
-  ): Promise<User> {
+  ) {
     return this.userService.updateUser(id, data);
   }
 
-  @Mutation(() => UserModel)
-  async deleteUser(@Args('id', { type: () => Int }) id: number): Promise<User> {
+  @Mutation(() => UserEntity)
+  async deleteUser(@Args('id', { type: () => Int }) id: number) {
     return this.userService.deleteUser(id);
   }
 
-  @Mutation(() => UserModel)
-  async activateUser(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<User> {
+  @Mutation(() => UserEntity)
+  async activateUser(@Args('id', { type: () => Int }) id: number) {
     return this.userService.activateUser(id);
   }
 
-  @Mutation(() => UserModel)
-  async deactivateUser(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<User> {
+  @Mutation(() => UserEntity)
+  async deactivateUser(@Args('id', { type: () => Int }) id: number) {
     return this.userService.deactivateUser(id);
   }
 
-  @Query(() => UserModel, { nullable: true })
-  @UseGuards(JwtAuthGuard)
-  async getCurrentUser(@Context() context: any): Promise<User | null> {
+  @Query(() => UserEntity, { nullable: true })
+  // @UseGuards(JwtAuthGuard)
+  async getCurrentUser(@Context() context: any) {
     return this.userService.getUser(context.req.user.id);
-    return context;
   }
 
-  @Query(() => [UserModel])
-  async getAllPlayers(): Promise<User[]> {
+  @Query(() => [UserEntity])
+  async getAllPlayers() {
     return this.userService.getAllPlayers();
   }
 
-  @Query(() => [UserModel])
-  async getAllBrands(): Promise<User[]> {
+  @Query(() => [UserEntity])
+  async getAllBrands() {
     return this.userService.getAllBrands();
   }
 }
