@@ -4,6 +4,7 @@ import { UserEntity } from 'src/report/entities/user.entity';
 import { QuizGameEntity } from 'src/report/entities/quiz.entity';
 import { Game } from 'src/report/entities/game.entity';
 import { Voucher } from 'src/report/entities/voucher.entity';
+import { Event } from 'src/report/entities/event.entity';
 
 @Resolver()
 export class ReportResolver {
@@ -91,6 +92,15 @@ export class ReportResolver {
     const start = new Date(startDate);
     const end = new Date(endDate);
     return this.reportService.getVouchersByDateRange(start, end);
+  }
 
+  @Query(() => [Event])
+  async getEventsByDateRange(
+    @Args('startDate') startDate: string,
+    @Args('endDate') endDate: string,
+  ): Promise<any[]> {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return this.reportService.getEventsByDateRange(start, end);
   }
 }
