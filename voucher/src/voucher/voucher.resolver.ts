@@ -21,9 +21,8 @@ export class VoucherResolver {
   addVoucherToUser(
     @Args('voucherId', { type: () => Int }) voucherId: number,
     @Args('userId', { type: () => Int }) userId: number,
-    @Args('qr_code') qr_code: string,
   ) {
-    return this.voucherService.addVoucherToUser(voucherId, userId, qr_code);
+    return this.voucherService.addVoucherToUser(voucherId, userId);
   }
 
   @Query(() => [Voucher], { name: 'findAllVoucher' })
@@ -146,8 +145,9 @@ export class VoucherResolver {
   useVoucher(
     @Args('voucherId', { type: () => Int }) voucherId: number,
     @Args('userId', { type: () => Int }) userId: number,
+    @Args('qr_code') qr_code: string,
   ) {
-    return this.voucherService.useVoucher(voucherId, userId);
+    return this.voucherService.useVoucher(voucherId, userId, qr_code);
   }
 
   @Mutation(() => Voucher)
