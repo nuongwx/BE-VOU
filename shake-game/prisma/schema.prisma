@@ -25,7 +25,7 @@ model Game {
   users     User[]
   // Company   Company?
   company   String[]
-  eventId   Int       @default(1)
+  eventId   Int?       
 
   lives     Int     @default(3)
   isDeleted Boolean @default(false)

@@ -78,4 +78,9 @@ export class QuizGameResolver {
   findQuizByUser(@Args('userId', { type: () => Int }) userId: number) {
     return this.quizGameService.findAll(2, 0);
   }
+
+  @Query(() => [QuizGameEntity], { name: 'findQuizGameNotBelongToEvent' })
+  async findQuizGameNotBelongToEvent() {
+    return await this.quizGameService.findUnassignedQuizGame();
+  }
 }

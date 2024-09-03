@@ -234,4 +234,52 @@ export class QuizGameService {
       where: { id, isDeleted: false },
     });
   }
+
+  async findUnassignedQuizGame() {
+    try {
+      const quizGames = await this.prisma.quizGame.findMany({
+        where: {
+          OR: [{ eventId: null }, { eventId: { lt: 0 } }],
+          isDeleted: false,
+        },
+        include: {
+          questions: {
+            include: {
+              quizGameQuestion: {
+                include: {
+                  answers: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!quizGames || quizGames.length === 0) {
+        throw new NotFoundException('Quiz game not found');
+      }
+
+      const result = quizGames.map((quizGame) => ({
+        ...quizGame,
+        questions: quizGame.questions.map((mapping) => ({
+          id: mapping.quizGameQuestion.id,
+          content: mapping.quizGameQuestion.content,
+          images: mapping.quizGameQuestion.images,
+          correctAnswerId: mapping.quizGameQuestion.correctAnswerId,
+          answers: mapping.quizGameQuestion.answers.map((answer) => ({
+            id: answer.id,
+            content: answer.content,
+            image: answer.image,
+            isDeleted: answer.isDeleted,
+          })),
+        })),
+      }));
+
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error finding unassigned quiz game',
+      );
+    }
+  }
 }

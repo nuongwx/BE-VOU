@@ -64,4 +64,9 @@ export class GameResolver {
       },
     });
   }
+
+  @Query(() => [Game], { name: 'findShakeGameNotBelongToEvent' })
+  async findShakeGameNotBelongToEvent() {
+    return await this.gameService.findUnassignedGame();
+  }
 }

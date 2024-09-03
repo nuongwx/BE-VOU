@@ -18,6 +18,6 @@ export class QuizGameQuestionEntity {
   @Field(() => Number, { nullable: true })
   correctAnswerId: number;
 
-  @Field(() => Number, { nullable: true })
-  quizGameId?: number;
+  // @Field(() => Number, { nullable: true })
+  // quizGameId?: number;
 }

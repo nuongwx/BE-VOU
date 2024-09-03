@@ -84,4 +84,15 @@ export class GameService {
       where: { id },
     });
   }
+
+  async findUnassignedGame() {
+    const games = await this.prisma.game.findMany({
+      where: {
+        OR: [{ eventId: null }, { eventId: { lt: 0 } }],
+        isDeleted: false,
+      },
+    });
+
+    return games;
+  }
 }

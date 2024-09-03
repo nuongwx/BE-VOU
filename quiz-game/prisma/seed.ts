@@ -19,7 +19,7 @@ async function main() {
       endTime: new Date(new Date().getTime() + 3600 * 1000), // 1 hour later
       playerQuantity: 10,
       companyId: 1,
-      eventId: 1,
+      eventId: null,
     },
   });
 
@@ -30,7 +30,7 @@ async function main() {
       endTime: new Date(new Date().getTime() + 7200 * 1000), // 2 hours later
       playerQuantity: 20,
       companyId: 2,
-      eventId: 1,
+      eventId: null,
     },
   });
 
@@ -41,7 +41,7 @@ async function main() {
       endTime: new Date(new Date().getTime() + 10800 * 1000), // 3 hours later
       playerQuantity: 30,
       companyId: 3,
-      eventId: 1,
+      eventId: null,
     },
   });
 

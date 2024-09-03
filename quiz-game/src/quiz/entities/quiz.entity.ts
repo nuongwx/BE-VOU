@@ -21,9 +21,9 @@ export class QuizGameEntity {
   @Field(() => Number)
   companyId: number;
 
-  @Field(() => Number)
+  @Field(() => Number, { nullable: true })
   eventId: number;
 
-  @Field(() => [QuizGameQuestionEntity])
+  @Field(() => [QuizGameQuestionEntity], { nullable: true })
   questions: QuizGameQuestionEntity[];
 }
