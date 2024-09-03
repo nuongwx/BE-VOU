@@ -100,13 +100,16 @@ export class QuizGameService {
         throw new NotFoundException('One or more questions not found');
       }
 
-      return await this.prisma.quizGameQuestionToQuizGameMapping.createMany({
-        data: questionIds.map((questionId) => ({
-          quizGameId,
-          quizQuestionId: questionId,
-        })),
-        skipDuplicates: true,
-      });
+      const result =
+        await this.prisma.quizGameQuestionToQuizGameMapping.createMany({
+          data: questionIds.map((questionId) => ({
+            quizGameId,
+            quizQuestionId: questionId,
+          })),
+          skipDuplicates: true,
+        });
+
+      return result.count > 0;
     } catch (error) {
       throw new InternalServerErrorException(
         'Error assigning questions to quiz game',
