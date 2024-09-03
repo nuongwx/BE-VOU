@@ -29,12 +29,41 @@ export class QuizGameService {
 
   async findAll(limit?: number, offset?: number) {
     try {
-      return await this.prisma.quizGame.findMany({
+      const quizGames = await this.prisma.quizGame.findMany({
         where: { isDeleted: false },
-        include: { questions: true },
+        include: {
+          questions: {
+            include: {
+              quizGameQuestion: {
+                include: {
+                  answers: true,
+                },
+              },
+            },
+          },
+        },
         take: limit ?? undefined,
         skip: offset ?? undefined,
       });
+
+      const flattenedQuizGames = quizGames.map((quizGame) => ({
+        ...quizGame,
+        questions: quizGame.questions.map((mapping) => ({
+          id: mapping.quizGameQuestion.id,
+          content: mapping.quizGameQuestion.content,
+          images: mapping.quizGameQuestion.images,
+          correctAnswerId: mapping.quizGameQuestion.correctAnswerId,
+          quizGameId: quizGame.id,
+          answers: mapping.quizGameQuestion.answers.map((answer) => ({
+            id: answer.id,
+            content: answer.content,
+            image: answer.image,
+            isDeleted: answer.isDeleted,
+          })),
+        })),
+      }));
+
+      return flattenedQuizGames;
     } catch (error) {
       throw new InternalServerErrorException('Error finding quiz games');
     }
@@ -44,18 +73,42 @@ export class QuizGameService {
     try {
       const quizGame = await this.prisma.quizGame.findUnique({
         where: { id: id, isDeleted: false },
-        include: { questions: true },
+        include: {
+          questions: {
+            include: {
+              quizGameQuestion: {
+                include: {
+                  answers: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!quizGame) {
         throw new NotFoundException('Quiz game not found');
       }
 
-      return quizGame;
+      const flattenedQuestions = quizGame.questions.map((mapping) => ({
+        id: mapping.quizGameQuestion.id,
+        content: mapping.quizGameQuestion.content,
+        images: mapping.quizGameQuestion.images,
+        correctAnswerId: mapping.quizGameQuestion.correctAnswerId,
+        quizGameId: quizGame.id,
+        answers: mapping.quizGameQuestion.answers.map((answer) => ({
+          id: answer.id,
+          content: answer.content,
+          image: answer.image,
+          isDeleted: answer.isDeleted,
+        })),
+      }));
+
+      return {
+        ...quizGame,
+        questions: flattenedQuestions,
+      };
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
       throw new InternalServerErrorException('Error finding quiz game');
     }
   }
