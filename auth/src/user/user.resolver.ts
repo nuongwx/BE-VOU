@@ -61,4 +61,14 @@ export class UserResolver {
     return this.userService.getUser(context.req.user.id);
     return context;
   }
+
+  @Query(() => [UserModel])
+  async getAllPlayers(): Promise<User[]> {
+    return this.userService.getAllPlayers();
+  }
+
+  @Query(() => [UserModel])
+  async getAllBrands(): Promise<User[]> {
+    return this.userService.getAllBrands();
+  }
 }

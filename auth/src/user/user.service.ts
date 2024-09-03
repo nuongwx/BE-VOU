@@ -46,4 +46,16 @@ export class UserService {
       data: { isActive: false },
     });
   }
+
+  async getAllPlayers(): Promise<User[]> {
+    return this.prisma.user.findMany({
+      where: { role: 'player' },
+    });
+  }
+
+  async getAllBrands(): Promise<User[]> {
+    return this.prisma.user.findMany({
+      where: { role: 'staff' },
+    });
+  }
 }

@@ -154,9 +154,16 @@ export class ReportService {
       },
     });
   }
-  
-  
 
-  
+  async getEventsByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+    return this.eventService.event.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
   
 }
