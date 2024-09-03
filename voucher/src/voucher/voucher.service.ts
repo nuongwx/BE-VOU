@@ -26,7 +26,7 @@ export class VoucherService {
       });
       return result;
     } catch (error) {
-      throw new InternalServerErrorException('Error creating voucher');
+      throw new InternalServerErrorException(error);
     }
   }
 

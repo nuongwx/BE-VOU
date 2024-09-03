@@ -18,7 +18,10 @@ export class CreateVoucherInput {
   brandId: [number];
 
   @Field(() => [String], { nullable: true })
-  image?: [string];
+  images?: [string];
+
+  @Field(() => Int, { nullable: true })
+  eventId: number;
 
   @Field(() => Date, { nullable: true })
   startTime: Date;

@@ -15,10 +15,10 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
-  app.enableCors({
-    origin: '*',
-    credentials: true,
-  });
+  // app.enableCors({
+  //   origin: '*',
+  //   credentials: true,
+  // });
 
   app.use(
     session({
