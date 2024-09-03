@@ -172,4 +172,12 @@ export class VoucherResolver {
   ) {
     return this.voucherService.getVoucherFromShake(shakeGameId);
   }
+
+  @Query(() => [Voucher], { name: 'getValidVoucherByBrand' })
+  async getValidVoucherByBrand(
+    @Args('brandId', { type: () => Int }) brandId: number,
+  ) {
+    return this.voucherService.getValidVoucherByBrand(brandId);
+  }
+
 }
