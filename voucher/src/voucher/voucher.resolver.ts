@@ -146,9 +146,8 @@ export class VoucherResolver {
   useVoucher(
     @Args('voucherId', { type: () => Int }) voucherId: number,
     @Args('userId', { type: () => Int }) userId: number,
-    @Args('qr_code') qr_code: string,
   ) {
-    return this.voucherService.useVoucher(voucherId, userId, qr_code);
+    return this.voucherService.useVoucher(voucherId, userId);
   }
 
   @Mutation(() => Voucher)
