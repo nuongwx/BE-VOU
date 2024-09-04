@@ -88,4 +88,14 @@ export class QuizGameResolver {
   generateScript(@Args('quizGameId', { type: () => Int }) quizGameId: number) {
     return this.quizGameService.createAudio(quizGameId);
   }
+
+  @Query(() => String, { name: 'video' })
+  generateVideo(@Args('quizGameId', { type: () => Int }) quizGameId: number) {
+    return this.quizGameService.createVideo(quizGameId);
+  }
+
+  @Query(() => String, { name: 'clips' })
+  generateClips() {
+    return this.quizGameService.fetchClips();
+  }
 }

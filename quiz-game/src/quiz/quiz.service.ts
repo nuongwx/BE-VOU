@@ -11,6 +11,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { InjectFluentFfmpeg, Ffmpeg } from '@mrkwskiti/fluent-ffmpeg-nestjs';
 import { OpenAIService } from '../openai/openai.service';
+import { DiDService } from '../d-id/d-id.service';
 import fs from 'fs';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class QuizGameService {
     @Inject('VOUCHER_SERVICE') private readonly voucherClient: ClientProxy,
     private readonly openaiService: OpenAIService,
     @InjectFluentFfmpeg() private readonly ffmpeg: Ffmpeg,
+    private readonly dIdService: DiDService,
   ) {}
 
   async create(createQuizGameInput: CreateQuizGameInput) {
@@ -438,5 +440,13 @@ export class QuizGameService {
         .run();
     });
     return questionsAsks.join('') + questionsAnswers.join('');
+  }
+
+  async createVideo(id: number) {
+    return this.dIdService.generateVideo(id);
+  }
+
+  async fetchClips() {
+    return this.dIdService.fetchClips();
   }
 }

@@ -18,8 +18,8 @@ import { KeyvAdapter } from '@apollo/utils.keyvadapter';
 import Keyv from 'keyv';
 import KeyvRedis from '@keyv/redis';
 import { ScheduleModule } from '@nestjs/schedule';
-import { FluentFfmpegModule } from '@mrkwskiti/fluent-ffmpeg-nestjs';
 import { OpenAIModule } from './openai/openai.module';
+import { dIdModule } from './d-id/d-id.module';
 
 @Module({
   imports: [
@@ -55,6 +55,7 @@ import { OpenAIModule } from './openai/openai.module';
     AuthModule,
     ScheduleModule.forRoot(),
     OpenAIModule,
+    dIdModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

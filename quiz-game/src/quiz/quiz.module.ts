@@ -7,6 +7,7 @@ import { QuizController } from './quiz.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OpenAIModule } from '../openai/openai.module';
 import { FluentFfmpegModule } from '@mrkwskiti/fluent-ffmpeg-nestjs';
+import { dIdModule } from '../d-id/d-id.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { FluentFfmpegModule } from '@mrkwskiti/fluent-ffmpeg-nestjs';
     ]),
     OpenAIModule,
     FluentFfmpegModule.forRoot(),
+    dIdModule,
   ],
   controllers: [QuizController],
   providers: [QuizGameResolver, QuizGameService],
