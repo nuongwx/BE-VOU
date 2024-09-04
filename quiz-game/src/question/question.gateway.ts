@@ -39,6 +39,7 @@ const correctClients: Set<string> = new Set();
 
 let currentQuestionId = 0;
 let currentQuestionIndex = 0;
+let totalQuestionsCount = 0;
 
 const questionAnswerTimeout = 10000;
 const timeBetweenQuestions = 12000;
@@ -94,6 +95,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
   async handleRegisterPlayer(client: Socket, data: string) {
     const username = client.handshake.auth.username;
     connectedClients.set(username, client);
+    console.log('Player registered:', username);
     client.emit('registerPlayerAck', {
       username,
       sessionId: client.id,
@@ -102,7 +104,9 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('startGame')
   async handleStartGame(@MessageBody() data: { quizGameId: number }) {
+    console.log('Starting game', data.quizGameId);
     const { quizGameId } = data;
+    console.log('Starting game', quizGameId);
 
     try {
       const quizQuestions = await this.prismaService.quizGameQuestion.findMany({
@@ -122,7 +126,9 @@ export class QuestionGateway implements OnGatewayDisconnect {
         return;
       }
 
-      this.server.emit('startGame', { gameId: quizGameId });
+      totalQuestionsCount = quizQuestions.length;
+
+      // this.server.emit('startGame', { gameId: quizGameId });
       console.log('Game started');
 
       for (let i = 0; i < quizQuestions.length; i++) {
@@ -198,10 +204,13 @@ export class QuestionGateway implements OnGatewayDisconnect {
       correctAnswerId: currentQuestion.correctAnswerId,
       incorrectCount: incorrectClients.size,
       correctCount: correctClients.size,
+      totalQuestionsCount: totalQuestionsCount,
+      questionAnswerTimeout: questionAnswerTimeout,
     };
 
     for (const [identifier, client] of connectedClients) {
       const isCorrect = correctClients.has(identifier);
+      console.log(questionSummary);
       client.emit('result', {
         correct: isCorrect,
         message:
@@ -217,7 +226,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
       if (!correctClients.has(identifier)) connectedClients.delete(identifier);
     });
 
-    if (currentQuestionIndex === connectedClients.size - 1) {
+    if (currentQuestionIndex === totalQuestionsCount - 1) {
       console.log('Game ended');
       this.handleEndGame();
     }
