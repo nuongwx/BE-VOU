@@ -7,7 +7,26 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class NotificationKeyService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createNotificationKeyInput: CreateNotificationKeyInput) {
+  async create(createNotificationKeyInput: CreateNotificationKeyInput) {
+    if (createNotificationKeyInput.expoPushToken === '') {
+      return null;
+    }
+
+    const expoPushToken = await this.prisma.notificationKey.findMany({
+      where: {
+        expoPushToken: createNotificationKeyInput.expoPushToken,
+        userId: { not: createNotificationKeyInput.userId },
+      },
+    });
+
+    if (expoPushToken.length > 0) {
+      expoPushToken.forEach(async (token) => {
+        await this.prisma.notificationKey.delete({
+          where: { id: token.id },
+        });
+      });
+    }
+
     return this.prisma.notificationKey.upsert({
       where: { userId: createNotificationKeyInput.userId },
       update: createNotificationKeyInput,
