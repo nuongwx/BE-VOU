@@ -23,7 +23,7 @@ export class UserEntity {
   @Field({ nullable: true })
   hashedPassword?: string;
 
-  @Field()
+  @Field({ nullable: true })
   email: string;
 
   @Field({ nullable: true })
@@ -32,7 +32,7 @@ export class UserEntity {
   @Field(() => Role)
   role: Role;
 
-  @Field()
+  @Field({ nullable: true })
   isActive: boolean;
 
   @Field({ nullable: true })
