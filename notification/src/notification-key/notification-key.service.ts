@@ -8,20 +8,10 @@ export class NotificationKeyService {
   constructor(private readonly prisma: PrismaService) {}
 
   create(createNotificationKeyInput: CreateNotificationKeyInput) {
-    const user = this.prisma.notificationKey.findUnique({
+    return this.prisma.notificationKey.upsert({
       where: { userId: createNotificationKeyInput.userId },
-    });
-
-    if (user) {
-      // update
-      return this.prisma.notificationKey.update({
-        where: { userId: createNotificationKeyInput.userId },
-        data: createNotificationKeyInput,
-      });
-    }
-
-    return this.prisma.notificationKey.create({
-      data: createNotificationKeyInput,
+      update: createNotificationKeyInput,
+      create: createNotificationKeyInput,
     });
   }
 

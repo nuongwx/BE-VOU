@@ -13,7 +13,7 @@ export class NotificationKeyResolver {
     return this.notificationKeyService.create(createNotificationKeyInput);
   }
 
-  @Query(() => [NotificationKey], { name: 'notificationKey' })
+  @Query(() => [NotificationKey], { name: 'notificationKeys' })
   findAll() {
     return this.notificationKeyService.findAll();
   }
