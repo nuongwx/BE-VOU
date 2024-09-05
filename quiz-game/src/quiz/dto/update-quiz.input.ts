@@ -16,6 +16,9 @@ export class UpdateQuizGameInput extends PartialType(CreateQuizGameInput) {
   endTime?: Date;
 
   @Field(() => Int, { nullable: true })
+  eventId: number;
+
+  @Field(() => Int, { nullable: true })
   playerQuantity?: number;
 
   @Field(() => Int, { nullable: true })
