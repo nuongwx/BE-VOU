@@ -7,7 +7,7 @@ export class VoucherController {
   constructor(private readonly voucherService: VoucherService) {}
 
   @MessagePattern({ cmd: 'assign_voucher_to_user' })
-  async assignVoucherToUser(eventId: number, userId: number) {
-    return this.voucherService.assignVoucherToUser(eventId, userId);
+  async assignVoucherToUser(data: { eventId: number; userId: number }) {
+    return this.voucherService.assignVoucherToUser(data.eventId, data.userId);
   }
 }

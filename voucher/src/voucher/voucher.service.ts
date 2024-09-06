@@ -70,6 +70,9 @@ export class VoucherService {
             gt: new Date(),
           },
         },
+        select: {
+          id: true,
+        },
       });
 
       if (!voucher) {
@@ -514,7 +517,7 @@ export class VoucherService {
     try {
       return await this.prisma.voucher.findMany({
         where: {
-          brandId: { has: brandId }, 
+          brandId: { has: brandId },
           status: VoucherStatus.VALID,
         },
       });
