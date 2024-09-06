@@ -16,6 +16,9 @@ export class CreateGameInput {
   })
   items: CreateItemInput[];
 
+  @Field(() => Int, { description: 'Event Id', nullable: true})
+  eventId: number;
+
   @Field(() => [Int], {
     description: 'Game Item Id',
     nullable: true,

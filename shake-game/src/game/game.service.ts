@@ -46,6 +46,7 @@ export class GameService {
       where: { id },
       data: {
         name: updateGameInput.name,
+        inventId: updateGameInput.eventId,
         items: {
           create: updateGameInput.items,
           connect: updateGameInput.itemId.map((id) => ({ id })),
