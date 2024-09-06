@@ -28,5 +28,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   ],
   controllers: [GameController],
   providers: [GameResolver, GameService],
+  exports: [GameService],
 })
 export class GameModule {}

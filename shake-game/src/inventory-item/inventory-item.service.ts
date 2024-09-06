@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateInventoryItemInput } from './dto/create-inventory-item.input';
 import { UpdateInventoryItemInput } from './dto/update-inventory-item.input';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class InventoryItemService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gameService: GameService,
+  ) {}
 
   async create(createInventoryItemInput: CreateInventoryItemInput) {
     const user = await this.prisma.user.findUniqueOrThrow({
@@ -94,6 +98,8 @@ export class InventoryItemService {
         },
       },
     });
+
+    this.gameService.assignVoucherForWinnerUser(user.gameId, user.id);
 
     return inventoryItem;
   }

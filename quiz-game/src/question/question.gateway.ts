@@ -29,7 +29,8 @@ export class SocketAuthInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const socket = context.switchToWs().getClient();
     const username = socket.id; // TODO: Replace with actual user ID extraction logic from auth token
-    socket.handshake.auth.username = username;
+    if (!socket.handshake.auth.username)
+      socket.handshake.auth.username = username;
     return next.handle().pipe(map((data) => ({ username, data })));
   }
 }
@@ -99,7 +100,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage('registerPlayer')
-  async handleRegisterPlayer(client: Socket, data: string) {
+  async handleRegisterPlayer(client: Socket, data: { id: number }) {
     if (currentGameId === 0) {
       client.emit('registerPlayerAck', {
         message: 'No game in progress',
@@ -113,6 +114,16 @@ export class QuestionGateway implements OnGatewayDisconnect {
       });
       return;
     }
+
+    // TODO: Replace with actual user ID extraction logic from auth token
+    if (!data || data.id === undefined) {
+      client.emit('registerPlayerAck', {
+        message: 'Invalid user ID',
+      });
+      return;
+    }
+
+    client.handshake.auth.username = data.id.toString();
 
     const username = client.handshake.auth.username;
     connectedClients.set(username, client);
@@ -267,6 +278,24 @@ export class QuestionGateway implements OnGatewayDisconnect {
       this.schedulerRegistry.deleteInterval(interval);
     });
 
+    // wait for 10 more seconds
+    setTimeout(() => {
+      this.quizGameService.stopVideoStream();
+    }, 10000);
+
+    const winnersIdentifiers = Array.from(correctClients.keys());
+    // cast to number
+    const winners = winnersIdentifiers.map((identifier) =>
+      parseInt(identifier),
+    );
+
+    winners.forEach(async (winner) => {
+      await this.quizGameService.assignVoucherForWinnerUser(
+        currentGameId,
+        winner,
+      );
+    });
+
     connectedClients.clear();
     incorrectClients.clear();
     correctClients.clear();
@@ -324,6 +353,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
     data: { questionId: number; answerId: number; timestamp: number },
   ) {
     const identifier = client.handshake.auth.username;
+    console.log('Answer', identifier, data);
 
     if (!connectedClients.has(identifier)) {
       client.emit('answerAck', { message: 'You are not a registered player' });

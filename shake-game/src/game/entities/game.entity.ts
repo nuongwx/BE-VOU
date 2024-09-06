@@ -9,6 +9,9 @@ export class Game {
   @Field(() => String, { description: 'Game Name' })
   name: string;
 
+  @Field(() => Int, { description: 'Event Id' })
+  eventId: number;
+
   // @Field(() => [Int], { description: 'Company Ids' })
   // companies: number[];
 

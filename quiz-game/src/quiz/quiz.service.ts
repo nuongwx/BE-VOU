@@ -459,40 +459,34 @@ export class QuizGameService {
       throw new NotFoundException('Video not found');
     }
 
-    // get absolute path
-    const beepPath = 'generated/beep.mp4';
-    const absoluteBeepPath = `${process.cwd()}/${beepPath}`;
-
-    console.log('absoluteBeepPath', absoluteBeepPath);
-
-    if (!fs.existsSync(absoluteBeepPath)) {
-      throw new NotFoundException('Beep sound not found');
-    }
-
     const absoluteVideoPath = `${process.cwd()}/${videoPath}`;
 
-    const command = this.ffmpeg()
-      .addInput(absoluteVideoPath)
-      .addInputOptions(['-re'])
-      .output('rtmp://csc13003.mooo.com/live/livestream')
-      .format('flv')
-      .audioCodec('aac')
-      .videoCodec('h264_qsv')
-      .outputOptions(['-profile:v', 'baseline', '-level', '3.1'])
-      .on('start', (commandLine) => {
-        console.log('Spawned Ffmpeg with command: ' + commandLine);
-      })
-      .on('error', (err, stdout, stderr) => {
-        console.log('Cannot process video: ' + err.message);
-        console.log('stdout here', stdout);
-        console.log('stderr here', stderr);
-      })
-      .on('end', (stdout, stderr) => {
-        console.log('Transcoding succeeded !');
-        console.log('stdout here', stdout);
-        console.log('stderr here', stderr);
-      })
-      .run();
+    return new Promise<void>((resolve, reject) => {
+      const command = this.ffmpeg()
+        .addInput(absoluteVideoPath)
+        .addInputOptions(['-re'])
+        .output('rtmp://csc13003.mooo.com/live/livestream')
+        .format('flv')
+        .audioCodec('aac')
+        .videoCodec('libx264')
+        .outputOptions(['-profile:v', 'baseline', '-level', '3.1'])
+        .on('start', (commandLine) => {
+          console.log('Spawned Ffmpeg with command: ' + commandLine);
+          resolve();
+        })
+        .on('error', (err, stdout, stderr) => {
+          console.log('Cannot process video: ' + err.message);
+          reject(err);
+        })
+        .on('end', (stdout, stderr) => {
+          console.log('Transcoding succeeded !');
+        })
+        .run();
+    });
+  }
+
+  async stopVideoStream() {
+    this.ffmpeg().kill('SIGKILL');
   }
 
   async fetchClips() {
