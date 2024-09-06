@@ -85,7 +85,7 @@ export class DiDService {
 
     let clipId = '';
 
-    await new Promise<string>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       request(options, function (error, response, body) {
         if (error) {
           reject(error);
@@ -95,6 +95,7 @@ export class DiDService {
             clipId = body.id;
             resolve(clipId);
           } else {
+            throw new Error(body.description);
             reject(body.description);
           }
         }
@@ -133,6 +134,95 @@ export class DiDService {
     });
   }
 
+  async isReady(clipId: string): Promise<boolean> {
+    if (!clipId || clipId === '') {
+      return false;
+    }
+
+    const options = {
+      method: 'GET',
+      url: `https://api.d-id.com/clips/${clipId}`,
+      headers: {
+        accept: 'application/json',
+        authorization: `Basic ${Buffer.from(
+          this.configService.get<string>('D_ID_API_KEY'),
+        ).toString('base64')}`,
+      },
+      json: true,
+    };
+
+    // keep checking until the clip is ready
+    return new Promise<boolean>((resolve, reject) => {
+      const interval = setInterval(() => {
+        request(options, function (error, response, body) {
+          if (error) {
+            reject(error);
+          } else {
+            if (response.statusCode === 200) {
+              if (body.result_url) {
+                clearInterval(interval);
+                resolve(true);
+              }
+            } else {
+              reject(body.description);
+            }
+          }
+        });
+      }, 5000);
+    });
+  }
+
+  async download(clipId: string) {
+    if (!clipId) {
+      return '';
+    }
+
+    const options = {
+      method: 'GET',
+      url: `https://api.d-id.com/clips/${clipId}`,
+      headers: {
+        accept: 'application/json',
+        authorization: `Basic ${Buffer.from(
+          this.configService.get<string>('D_ID_API_KEY'),
+        ).toString('base64')}`,
+      },
+      json: true,
+    };
+
+    const url = new Promise<string>((resolve, reject) => {
+      request(options, function (error, response, body) {
+        if (error) {
+          reject(error);
+        } else {
+          if (response.statusCode === 200 && body.result_url) {
+            {
+              resolve(body.result_url);
+            }
+          } else {
+            reject(body.description);
+          }
+        }
+      });
+    });
+
+    // save the file
+    const file = await url;
+    console.log('Downloading file:', file);
+    const fileName = `generated/output-game-${clipId}.mp4`;
+    const fileStream = fs.createWriteStream(fileName);
+
+    return new Promise<string>((resolve, reject) => {
+      request(file)
+        .pipe(fileStream)
+        .on('close', () => {
+          resolve(fileName);
+        })
+        .on('error', (error) => {
+          reject(error);
+        });
+    });
+  }
+
   async fetchClips() {
     const options = {
       method: 'GET',
@@ -143,7 +233,7 @@ export class DiDService {
           this.configService.get<string>('D_ID_API_KEY'),
         ).toString('base64')}`,
       },
-      // json: true,
+      json: true,
     };
 
     return new Promise<string>((resolve, reject) => {

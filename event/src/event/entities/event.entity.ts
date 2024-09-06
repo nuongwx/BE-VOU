@@ -30,4 +30,7 @@ export class Event {
 
   @Field(() => [Int], { nullable: true }) // point to user id
   brands: number[];
+
+  @Field(() => Int, { description: 'Game Id', nullable: true })
+  gameId: number;
 }
