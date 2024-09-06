@@ -79,4 +79,9 @@ export class EventResolver {
   getEventByBrandId(@Args('userId', { type: () => Int }) userId: number) {
     return this.eventService.getEventByBrandId(userId);
   }
+
+  @Query(() => Event, { name: 'getEventWithGameIds' })
+  getEventWithGameIds(@Args('eventId', { type: () => Int }) eventId: number) {
+    return this.eventService.getEventWithGameIds(eventId);
+  }
 }

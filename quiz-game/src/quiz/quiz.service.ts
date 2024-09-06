@@ -498,4 +498,12 @@ export class QuizGameService {
   async fetchClips() {
     return this.dIdService.fetchClips();
   }
+
+  async getQuizGameIdsByEventId(eventId: number) {
+    const quizs = await this.prisma.quizGame.findMany({
+      where: { eventId, isDeleted: false },
+    });
+
+    return quizs.map((quiz) => quiz.id);
+  }
 }
