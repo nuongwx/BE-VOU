@@ -44,4 +44,7 @@ export class CreateEventInput {
 
   @Field(() => String, { description: 'Event Image URL', defaultValue: 'https://via.placeholder.com/150' })
   imageUrl: string;
+
+  @Field(() => Int, { description: 'Game Id', nullable: true })
+  gameId: number;
 }

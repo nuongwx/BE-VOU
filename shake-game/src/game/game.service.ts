@@ -96,4 +96,15 @@ export class GameService {
 
     return games;
   }
+
+  async getShakeGameIdsByEventId(eventId: number) {
+    const games = await this.prisma.game.findMany({
+      where: {
+        eventId,
+        isDeleted: false,
+      },
+    });
+
+    return games.map((game) => game.id);
+  }
 }

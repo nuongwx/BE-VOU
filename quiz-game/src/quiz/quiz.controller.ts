@@ -10,4 +10,9 @@ export class QuizController {
   async getQuizGameById(data: { id: number }) {
     return this.quizService.getQuizGameById(data.id);
   }
+
+  @MessagePattern({ cmd: 'get_quiz_game_ids_by_event_id' })
+  async getQuizGameIdsByEventId(data: { eventId: number }) {
+    return this.quizService.getQuizGameIdsByEventId(data.eventId);
+  }
 }

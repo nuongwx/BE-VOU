@@ -36,5 +36,6 @@ import { dIdModule } from '../d-id/d-id.module';
   ],
   controllers: [QuizController],
   providers: [QuizGameResolver, QuizGameService],
+  exports: [QuizGameService],
 })
 export class QuizModule {}

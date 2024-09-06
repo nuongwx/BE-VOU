@@ -8,48 +8,46 @@ datasource db {
 }
 
 model QuizGame {
-  id             Int       @id @default(autoincrement())
+  id             Int                                 @id @default(autoincrement())
   gameName       String
   startTime      DateTime
   endTime        DateTime
   playerQuantity Int
   companyId      Int
-  eventId        Int?       
-  isDeleted      Boolean   @default(false)
+  eventId        Int?
+  isDeleted      Boolean                             @default(false)
   questions      QuizGameQuestionToQuizGameMapping[]
 }
 
 model QuizGameQuestion {
-  id              Int                                   @id @default(autoincrement())
+  id              Int                                 @id @default(autoincrement())
   content         String
   images          String[]
-  answers         QuizGameAnswer[]                      @relation("QuestionAnswers")
-  correctAnswerId Int?                                  @unique
-  correctAnswer   QuizGameAnswer?                       @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
-  isDeleted       Boolean   @default(false)
+  answers         QuizGameAnswer[]                    @relation("QuestionAnswers")
+  correctAnswerId Int?                                @unique
+  correctAnswer   QuizGameAnswer?                     @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
+  isDeleted       Boolean                             @default(false)
   quizGames       QuizGameQuestionToQuizGameMapping[]
 }
 
 model QuizGameAnswer {
-  id          Int               @id @default(autoincrement())
-  content     String
-  image       String?
-  questionId  Int?
-  question    QuizGameQuestion? @relation("QuestionAnswers", fields: [questionId], references: [id])
-  correctFor  QuizGameQuestion? @relation("CorrectAnswer")
-  isDeleted   Boolean           @default(false)
+  id         Int               @id @default(autoincrement())
+  content    String
+  image      String?
+  questionId Int?
+  question   QuizGameQuestion? @relation("QuestionAnswers", fields: [questionId], references: [id])
+  correctFor QuizGameQuestion? @relation("CorrectAnswer")
+  isDeleted  Boolean           @default(false)
 }
 
-
 model QuizGameQuestionToQuizGameMapping {
-  id                Int                @id @default(autoincrement())
-  quizQuestionId    Int
-  quizGameId        Int
-  orderIndex        Int                @default(0)
+  id             Int @id @default(autoincrement())
+  quizQuestionId Int
+  quizGameId     Int
+  orderIndex     Int @default(0)
 
-  quizGame          QuizGame           @relation(fields: [quizGameId], references: [id])
-  quizGameQuestion  QuizGameQuestion   @relation(fields: [quizQuestionId], references: [id])
+  quizGame         QuizGame         @relation(fields: [quizGameId], references: [id])
+  quizGameQuestion QuizGameQuestion @relation(fields: [quizQuestionId], references: [id])
 
   @@unique([quizGameId, quizQuestionId])
 }
-

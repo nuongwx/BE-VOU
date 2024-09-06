@@ -5,6 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { QuestionGateway } from './question.gateway';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { QuizModule } from '../quiz/quiz.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         inject: [ConfigService],
       },
     ]),
+    QuizModule,
   ],
   providers: [QuestionResolver, QuestionService, QuestionGateway],
 })

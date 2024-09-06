@@ -22,6 +22,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom, map, Observable } from 'rxjs';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
+import { QuizGameService } from '../quiz/quiz.service';
 
 @Injectable()
 export class SocketAuthInterceptor implements NestInterceptor {
@@ -40,9 +41,10 @@ const correctClients: Set<string> = new Set();
 let currentQuestionId = 0;
 let currentQuestionIndex = 0;
 let totalQuestionsCount = 0;
+let currentGameId = 0;
 
 const questionAnswerTimeout = 10000;
-const timeBetweenQuestions = 12000;
+const timeBetweenQuestions = 10000;
 
 @Injectable()
 export class TransformInterceptor implements PipeTransform {
@@ -72,6 +74,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
     private readonly voucherServiceClient: ClientProxy,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly prismaService: PrismaService,
+    private readonly quizGameService: QuizGameService,
   ) {}
 
   handleDisconnect(client: Socket) {
@@ -86,13 +89,31 @@ export class QuestionGateway implements OnGatewayDisconnect {
   }
 
   async info() {
-    this.server.emit('broadcast', {
-      totalConnections: this.server.engine.clientsCount,
-    });
+    const interval = setInterval(() => {
+      this.server.emit('broadcast', {
+        totalConnections: this.server.engine.clientsCount,
+      });
+    }, 1000);
+
+    this.schedulerRegistry.addInterval('broadcast', interval);
   }
 
   @SubscribeMessage('registerPlayer')
   async handleRegisterPlayer(client: Socket, data: string) {
+    if (currentGameId === 0) {
+      client.emit('registerPlayerAck', {
+        message: 'No game in progress',
+      });
+      return;
+    }
+
+    if (currentQuestionIndex !== 0) {
+      client.emit('registerPlayerAck', {
+        message: 'Game is already in progress',
+      });
+      return;
+    }
+
     const username = client.handshake.auth.username;
     connectedClients.set(username, client);
     console.log('Player registered:', username);
@@ -104,17 +125,43 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('startGame')
   async handleStartGame(@MessageBody() data: { quizGameId: number }) {
+    console.log('Starting game', data);
+    if (currentGameId !== 0) {
+      this.server.emit('error', {
+        message: 'Game already in progress',
+      });
+      return;
+    }
+
+    if (data.quizGameId && !isNaN(data.quizGameId)) {
+      const game = await this.prismaService.quizGame.findUniqueOrThrow({
+        where: { id: data.quizGameId },
+      });
+
+      if (!game) {
+        this.server.emit('error', {
+          message: 'Quiz game not found',
+        });
+        return;
+      }
+    } else {
+      this.server.emit('error', {
+        message: 'Invalid quiz game ID',
+      });
+      return;
+    }
+
     console.log('Starting game', data.quizGameId);
     const { quizGameId } = data;
     console.log('Starting game', quizGameId);
+
+    currentGameId = quizGameId;
 
     try {
       const quizQuestions = await this.prismaService.quizGameQuestion.findMany({
         where: {
           isDeleted: false,
-          quizGames: {
-            some: { quizGameId },
-          },
+          quizGames: { some: { quizGameId: quizGameId } },
         },
         include: { answers: { where: { isDeleted: false } } },
       });
@@ -127,6 +174,29 @@ export class QuestionGateway implements OnGatewayDisconnect {
       }
 
       totalQuestionsCount = quizQuestions.length;
+
+      console.log('Fetched questions', quizQuestions);
+
+      this.info();
+
+      // console.log('Creating audio');
+      // const audio = await this.quizGameService.createAudio(quizGameId);
+      // console.log('Audio created', audio);
+
+      // console.log('Creating video');
+      // const video = await this.quizGameService.createVideo(quizGameId);
+
+      // console.log('Waiting for video to be ready');
+      // await this.quizGameService.waitForVideo(video);
+
+      // delay 30 seconds to allow video to be ready
+      console.log('Waiting for 30 seconds');
+      await new Promise((resolve) => setTimeout(resolve, 30000));
+
+      const video = 'clp_Aj5ybUQBBZsAQxylHYumT'; // TODO: Remove hardcoded video ID
+
+      console.log('Starting video stream');
+      this.quizGameService.startVideoStream(video);
 
       // this.server.emit('startGame', { gameId: quizGameId });
       console.log('Game started');
@@ -186,10 +256,25 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('endGame')
   async handleEndGame() {
-    this.server.emit('endGame', { gameId: currentQuestionIndex });
+    this.server.emit('endGame', { gameId: currentGameId });
     this.schedulerRegistry.getTimeouts().forEach((timeout) => {
-      clearTimeout(timeout);
+      console.log('Clearing timeout', timeout);
+      this.schedulerRegistry.deleteTimeout(timeout);
     });
+
+    this.schedulerRegistry.getIntervals().forEach((interval) => {
+      console.log('Clearing interval', interval);
+      this.schedulerRegistry.deleteInterval(interval);
+    });
+
+    connectedClients.clear();
+    incorrectClients.clear();
+    correctClients.clear();
+    currentQuestionId = 0;
+    currentQuestionIndex = 0;
+    totalQuestionsCount = 0;
+    currentGameId = 0;
+    console.log('Game ended');
   }
 
   async emitResult() {
