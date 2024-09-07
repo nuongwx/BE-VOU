@@ -5,6 +5,7 @@ import { CreateRedeemInput } from './dto/create-redeem.input';
 import { UpdateRedeemInput } from './dto/update-redeem.input';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ShakeUser } from 'src/user/entities/user.entity';
+import { VoucherLine } from './entities/voucher.entity';
 
 @Resolver(() => Redeem)
 export class RedeemResolver {
@@ -13,7 +14,7 @@ export class RedeemResolver {
     private readonly prisma: PrismaService,
   ) {}
 
-  @Mutation(() => Redeem)
+  @Mutation(() => VoucherLine)
   createRedeem(@Args('createRedeemInput') createRedeemInput: CreateRedeemInput) {
     return this.redeemService.create(createRedeemInput);
   }

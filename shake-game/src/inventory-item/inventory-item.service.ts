@@ -99,8 +99,6 @@ export class InventoryItemService {
       },
     });
 
-    this.gameService.assignVoucherForWinnerUser(user.gameId, user.id);
-
     return inventoryItem;
   }
 

@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateRedeemInput } from './dto/create-redeem.input';
 import { UpdateRedeemInput } from './dto/update-redeem.input';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class RedeemService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gameService: GameService,
+  ) {}
 
   async create(createRedeemInput: CreateRedeemInput) {
     // Start a transaction
@@ -67,7 +71,7 @@ export class RedeemService {
       });
 
       // Create redeem record
-      return prisma.redeem.create({
+      await prisma.redeem.create({
         data: {
           User: {
             connect: {
@@ -76,6 +80,8 @@ export class RedeemService {
           },
         },
       });
+
+      return this.gameService.assignVoucherForWinnerUser(game.id, user.id);
     });
   }
 
