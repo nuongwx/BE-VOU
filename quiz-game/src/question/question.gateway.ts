@@ -202,19 +202,23 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
       // delay 30 seconds to allow video to be ready
       console.log('Waiting for 30 seconds');
-      await new Promise((resolve) => setTimeout(resolve, 30000));
+      const delay = setTimeout(() => {
+        console.log('30 seconds passed');
 
-      const video = 'clp_Aj5ybUQBBZsAQxylHYumT'; // TODO: Remove hardcoded video ID
+        const video = 'clp_Aj5ybUQBBZsAQxylHYumT'; // TODO: Remove hardcoded video ID
 
-      console.log('Starting video stream');
-      this.quizGameService.startVideoStream(video);
+        console.log('Starting video stream');
+        this.quizGameService.startVideoStream(video);
 
-      // this.server.emit('startGame', { gameId: quizGameId });
-      console.log('Game started');
+        // this.server.emit('startGame', { gameId: quizGameId });
+        console.log('Game started');
 
-      for (let i = 0; i < quizQuestions.length; i++) {
-        this.scheduleQuestionEmission(quizQuestions, i);
-      }
+        for (let i = 0; i < quizQuestions.length; i++) {
+          this.scheduleQuestionEmission(quizQuestions, i);
+        }
+      }, 10000);
+
+      this.schedulerRegistry.addTimeout('delay', delay);
     } catch (error) {
       console.error('Error starting game:', error);
       this.server.emit('error', {
@@ -237,7 +241,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
       currentQuestionIndex = i;
 
       this.scheduleQuestionTimeout(quizQuestions[i], i);
-    }, i * timeBetweenQuestions);
+    }, i * (timeBetweenQuestions + questionAnswerTimeout));
 
     this.schedulerRegistry.addTimeout(
       `questionEmitTimeout${i}`,
@@ -251,7 +255,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
       const questionSummaryTimeout = setTimeout(() => {
         this.emitResult();
-      }, 1000);
+      }, 100);
 
       this.schedulerRegistry.addTimeout(
         `questionSummaryTimeout${index}`,
@@ -290,10 +294,17 @@ export class QuestionGateway implements OnGatewayDisconnect {
     );
 
     winners.forEach(async (winner) => {
-      await this.quizGameService.assignVoucherForWinnerUser(
+      const voucher = await this.quizGameService.assignVoucherForWinnerUser(
         currentGameId,
         winner,
       );
+
+      if (voucher) {
+        this.server.emit('voucherAssigned', {
+          userId: winner,
+          voucher,
+        });
+      }
     });
 
     connectedClients.clear();
