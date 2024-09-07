@@ -216,8 +216,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
         for (let i = 0; i < quizQuestions.length; i++) {
           this.scheduleQuestionEmission(quizQuestions, i);
         }
-      }, 10000);
-
+      }, 30000);
       this.schedulerRegistry.addTimeout('delay', delay);
     } catch (error) {
       console.error('Error starting game:', error);
