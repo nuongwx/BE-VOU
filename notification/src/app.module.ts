@@ -9,6 +9,7 @@ import { ExpoNotificationModule } from './expo-notification/expo-notification.mo
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
     NotificationKeyModule,
     NotificationRecordModule,
     ExpoNotificationModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

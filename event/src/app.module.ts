@@ -15,6 +15,7 @@ import Keyv from 'keyv';
 import { PrismaModule } from './prisma/prisma.module';
 import KeyvRedis from '@keyv/redis';
 import { UploadModule } from './upload/upload.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UploadModule } from './upload/upload.module';
     FavouriteModule,
     PostModule,
     UploadModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

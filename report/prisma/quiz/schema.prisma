@@ -17,7 +17,7 @@ model QuizGame {
   playerQuantity                    Int
   companyId                         Int
   isDeleted                         Boolean                             @default(false)
-  eventId                           Int                                 @default(1)
+  eventId                           Int?
   QuizGameQuestionToQuizGameMapping QuizGameQuestionToQuizGameMapping[]
 }
 

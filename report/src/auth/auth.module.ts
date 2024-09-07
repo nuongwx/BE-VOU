@@ -5,7 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ClientsModule.registerAsync([
       {
         name: 'REPORT_SERVICE',

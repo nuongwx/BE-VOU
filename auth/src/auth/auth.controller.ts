@@ -8,7 +8,7 @@ export class AuthController {
 
   // To receive messages from other BE repositories, they need to verify the user token
   @MessagePattern({ cmd: 'validate_token' })
-  async validateToken(token: string) {
-    return this.authService.validateToken(token);
+  async validateToken(data: { token: string }) {
+    return this.authService.validateToken(data.token);
   }
 }

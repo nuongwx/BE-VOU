@@ -4,7 +4,7 @@ import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
-  constructor(@Inject('SHAKE_SERVICE') private rabbitClient: ClientProxy) {}
+  constructor(@Inject('NOTI_SERVICE') private rabbitClient: ClientProxy) {}
 
   async validateToken(token: string): Promise<any> {
     const response = firstValueFrom(this.rabbitClient.send({ cmd: 'validate_token' }, { token }).pipe(timeout(50000)));

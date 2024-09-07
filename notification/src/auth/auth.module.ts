@@ -10,7 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
     ClientsModule.registerAsync([
       {
-        name: 'SHAKE_SERVICE',
+        name: 'NOTI_SERVICE',
         imports: [ConfigModule],
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,

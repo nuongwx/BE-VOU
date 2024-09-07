@@ -41,7 +41,9 @@ export class AuthService {
     //     email: signUpInput.email,
     //     password: signUpInput.password,
     // });
-    const userExists = await this.prisma.user.findUnique({ where: { email: signUpInput.email } });
+    const userExists = await this.prisma.user.findUnique({
+      where: { email: signUpInput.email },
+    });
     if (userExists) {
       throw new BadRequestException('Email already exists');
     }

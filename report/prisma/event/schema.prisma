@@ -13,12 +13,13 @@ model Event {
   id          Int         @id @default(autoincrement())
   name        String
   description String
+  imageUrl    String      @default("")
   beginAt     DateTime
   endAt       DateTime
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  brands      Int[]       @default([])
   status      EventStatus @default(INACTIVE)
-  imageUrl    String      @default("")
   favourite   Favourite[]
   posts       Post[]
 }
@@ -27,11 +28,11 @@ model Post {
   id        Int        @id @default(autoincrement())
   title     String
   content   String
+  imageUrl  String     @default("")
   status    PostStatus @default(DRAFT)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   eventId   Int?
-  imageUrl  String     @default("")
   event     Event?     @relation(fields: [eventId], references: [id])
 }
 
