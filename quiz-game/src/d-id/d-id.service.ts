@@ -76,7 +76,7 @@ export class DiDService {
           subtitles: 'false',
           audio_url: audioUrl,
         },
-        config: { result_format: 'mp4', output_resolution: 360 },
+        config: { result_format: 'mp4' },
         presenter_config: { crop: { type: 'wide' } },
         driver_id: 'Vcq0R4a8F0',
       },

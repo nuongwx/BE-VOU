@@ -17,6 +17,7 @@ model QuizGame {
   eventId        Int?
   isDeleted      Boolean                             @default(false)
   questions      QuizGameQuestionToQuizGameMapping[]
+  executed       Boolean                             @default(false)
 }
 
 model QuizGameQuestion {

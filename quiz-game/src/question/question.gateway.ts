@@ -20,9 +20,15 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom, map, Observable } from 'rxjs';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import {
+  Cron,
+  CronExpression,
+  Interval,
+  SchedulerRegistry,
+} from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { QuizGameService } from '../quiz/quiz.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SocketAuthInterceptor implements NestInterceptor {
@@ -43,6 +49,8 @@ let currentQuestionId = 0;
 let currentQuestionIndex = 0;
 let totalQuestionsCount = 0;
 let currentGameId = 0;
+
+let checking = false;
 
 const questionAnswerTimeout = 10000;
 const timeBetweenQuestions = 10000;
@@ -73,9 +81,10 @@ export class QuestionGateway implements OnGatewayDisconnect {
     private readonly questionService: QuestionService,
     @Inject('VOUCHER_SERVICE')
     private readonly voucherServiceClient: ClientProxy,
-    private readonly schedulerRegistry: SchedulerRegistry,
+    private schedulerRegistry: SchedulerRegistry,
     private readonly prismaService: PrismaService,
     private readonly quizGameService: QuizGameService,
+    private readonly configService: ConfigService,
   ) {}
 
   handleDisconnect(client: Socket) {
@@ -134,6 +143,32 @@ export class QuestionGateway implements OnGatewayDisconnect {
     });
   }
 
+  // @Interval('findAndStartGame', 10000)
+  @Cron(CronExpression.EVERY_10_SECONDS, { name: 'findAndStartGame' })
+  async findAndStartGame() {
+    if (checking) return; // weird bug where the interval is called twice
+    checking = true;
+    if (currentGameId === 0) {
+      console.log(new Date(), 'Checking for active games');
+      const game = await this.prismaService.quizGame.findFirst({
+        where: {
+          startTime: {
+            lte: new Date(),
+          },
+          endTime: {
+            gte: new Date(),
+          },
+          executed: false,
+        },
+      });
+
+      if (game) {
+        this.handleStartGame({ quizGameId: game.id });
+      }
+    }
+    checking = false;
+  }
+
   @SubscribeMessage('startGame')
   async handleStartGame(@MessageBody() data: { quizGameId: number }) {
     console.log('Starting game', data);
@@ -162,9 +197,8 @@ export class QuestionGateway implements OnGatewayDisconnect {
       return;
     }
 
-    console.log('Starting game', data.quizGameId);
     const { quizGameId } = data;
-    console.log('Starting game', quizGameId);
+    console.log('Game found, starting: ', quizGameId);
 
     currentGameId = quizGameId;
 
@@ -175,6 +209,27 @@ export class QuestionGateway implements OnGatewayDisconnect {
           quizGames: { some: { quizGameId: quizGameId } },
         },
         include: { answers: { where: { isDeleted: false } } },
+      });
+
+      const questions =
+        await this.prismaService.quizGameQuestionToQuizGameMapping.findMany({
+          where: { quizGameId: quizGameId },
+          orderBy: { orderIndex: 'asc' },
+          include: {
+            quizGameQuestion: {
+              include: {
+                answers: true,
+              },
+            },
+          },
+        });
+
+      // sort questions by orderIndex
+      quizQuestions.sort((a, b) => {
+        return (
+          questions.findIndex((q) => q.quizGameQuestion.id === a.id) -
+          questions.findIndex((q) => q.quizGameQuestion.id === b.id)
+        );
       });
 
       if (quizQuestions.length === 0) {
@@ -190,33 +245,34 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
       this.info();
 
-      // console.log('Creating audio');
-      // const audio = await this.quizGameService.createAudio(quizGameId);
-      // console.log('Audio created', audio);
+      let video = 'clp_Aj5ybUQBBZsAQxylHYumT'; // TODO: Remove hardcoded video ID
 
-      // console.log('Creating video');
-      // const video = await this.quizGameService.createVideo(quizGameId);
+      if (this.configService.get('PRODUCTION') === 'true') {
+        console.log('Creating audio');
+        const audio = await this.quizGameService.createAudio(quizGameId);
+        console.log('Audio created', audio);
 
-      // console.log('Waiting for video to be ready');
-      // await this.quizGameService.waitForVideo(video);
+        console.log('Creating video');
+        video = await this.quizGameService.createVideo(quizGameId);
 
+        console.log('Waiting for video to be ready');
+        await this.quizGameService.waitForVideo(video);
+      }
       // delay 30 seconds to allow video to be ready
       console.log('Waiting for 30 seconds');
       const delay = setTimeout(() => {
         console.log('30 seconds passed');
 
-        const video = 'clp_Aj5ybUQBBZsAQxylHYumT'; // TODO: Remove hardcoded video ID
-
         console.log('Starting video stream');
         this.quizGameService.startVideoStream(video);
 
-        // this.server.emit('startGame', { gameId: quizGameId });
+        this.server.emit('startGame', { gameId: quizGameId });
         console.log('Game started');
 
         for (let i = 0; i < quizQuestions.length; i++) {
           this.scheduleQuestionEmission(quizQuestions, i);
         }
-      }, 30000);
+      }, 10000);
       this.schedulerRegistry.addTimeout('delay', delay);
     } catch (error) {
       console.error('Error starting game:', error);
@@ -226,7 +282,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
     }
   }
 
-  scheduleQuestionEmission(quizQuestions, i) {
+  async scheduleQuestionEmission(quizQuestions, i) {
     const questionEmitTimeout = setTimeout(() => {
       correctClients.clear();
       incorrectClients.clear();
@@ -248,7 +304,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
     );
   }
 
-  scheduleQuestionTimeout(question, index) {
+  async scheduleQuestionTimeout(question, index) {
     const questionTimeout = setTimeout(() => {
       this.server.emit('questionTimeout', { questionId: question.id });
 
@@ -270,6 +326,13 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('endGame')
   async handleEndGame() {
+    if (currentGameId === 0) {
+      this.server.emit('error', {
+        message: 'No game in progress',
+      });
+      return;
+    }
+
     this.server.emit('endGame', { gameId: currentGameId });
     this.schedulerRegistry.getTimeouts().forEach((timeout) => {
       console.log('Clearing timeout', timeout);
@@ -304,6 +367,11 @@ export class QuestionGateway implements OnGatewayDisconnect {
           voucher,
         });
       }
+    });
+
+    await this.prismaService.quizGame.update({
+      where: { id: currentGameId },
+      data: { executed: true },
     });
 
     connectedClients.clear();
