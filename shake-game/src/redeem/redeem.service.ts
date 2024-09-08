@@ -81,7 +81,7 @@ export class RedeemService {
         },
       });
 
-      return this.gameService.assignVoucherForWinnerUser(game.id, user.id);
+      return this.gameService.assignVoucherForWinnerUser(game.id, user.authUserId);
     });
   }
 

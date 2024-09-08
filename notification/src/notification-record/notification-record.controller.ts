@@ -26,6 +26,7 @@ export class NotificationController {
 
   @MessagePattern('createNotification')
   async create(@Payload() createNotificationDto: CreateNotificationDto) {
+    console.log('createNotificationDto', createNotificationDto);
     return this.notificationRecordService.create(createNotificationDto);
   }
 

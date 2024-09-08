@@ -17,6 +17,7 @@ export class VoucherService {
     private readonly prisma: PrismaService,
     @Inject('QUIZ_SERVICE') private readonly quizClient: ClientProxy,
     @Inject('SHAKE_SERVICE') private readonly shakeClient: ClientProxy,
+    @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientProxy,
   ) {}
 
   async create(createVoucherInput: CreateVoucherInput) {
@@ -43,6 +44,13 @@ export class VoucherService {
       if (!voucher || !user) {
         throw new NotFoundException('Invalid input');
       }
+
+      this.notificationClient.emit('createNotification', {
+        userId: userId,
+        title: 'Voucher Assigned',
+        body: 'You have been assigned a voucher',
+        data: JSON.stringify({ voucherId: voucherId }),
+      });
 
       return await this.prisma.voucherLine.create({
         data: {
@@ -81,6 +89,13 @@ export class VoucherService {
 
       // Pls generate a QR code here
       const qr_code = '';
+
+      this.notificationClient.emit('createNotification', {
+        userId: userId,
+        title: 'Voucher Assigned',
+        body: 'A voucher has been assigned to you',
+        data: JSON.stringify({ voucherId: voucher.id }),
+      });
 
       return await this.prisma.voucherLine.create({
         data: {
@@ -395,6 +410,13 @@ export class VoucherService {
       if (!voucherLine) {
         throw new NotFoundException('Voucher not found');
       }
+
+      this.notificationClient.emit('createNotification', {
+        userId: userId,
+        title: 'Voucher Used',
+        body: 'Your voucher has been used',
+        data: JSON.stringify({ voucherId: voucherId }),
+      });
 
       return await this.prisma.voucherLine.update({
         where: {
