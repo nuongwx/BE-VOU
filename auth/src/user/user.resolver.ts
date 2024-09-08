@@ -63,4 +63,9 @@ export class UserResolver {
   async getAllBrands() {
     return this.userService.getAllBrands();
   }
+
+  @Query(() => UserEntity)
+  async getBrandById(@Args('id', { type: () => Int }) id: number) {
+    return this.userService.getBrandById(id);
+  }
 }

@@ -58,4 +58,10 @@ export class UserService {
       where: { role: 'staff' },
     });
   }
+
+  async getBrandById(brandId: number) {
+    return await this.prisma.user.findUnique({
+      where: { id: brandId },
+    });
+  }
 }
