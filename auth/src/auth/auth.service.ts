@@ -254,8 +254,12 @@ export class AuthService {
       throw new BadRequestException('Email not found');
     }
 
-    const resetToken = randomBytes(32).toString('hex');
-    const hashedResetToken = await argon.hash(resetToken);
+    // const resetToken = randomBytes(32).toString('hex');
+    // const hashedResetToken = await argon.hash(resetToken);
+
+    // random 6 digit number
+    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedResetToken = resetToken;
 
     await this.prisma.user.update({
       where: { email },
@@ -271,7 +275,7 @@ export class AuthService {
       html: `Your password reset token is: ${resetToken}`,
     });
 
-    return { message: 'Password reset token sent' };
+    return 'Password reset token sent';
   }
 
   async verifyPasswordResetToken(email: string, token: string) {
@@ -280,7 +284,12 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
-    const isTokenValid = await argon.verify(user.passwordResetToken, token);
+    // const isTokenValid = await argon.verify(user.passwordResetToken, token);
+    // if (!isTokenValid || user.passwordResetExpires < new Date()) {
+    //   throw new BadRequestException('Invalid or expired reset token');
+    // }
+
+    const isTokenValid = user.passwordResetToken === token;
     if (!isTokenValid || user.passwordResetExpires < new Date()) {
       throw new BadRequestException('Invalid or expired reset token');
     }
@@ -302,7 +311,12 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
-    const isTokenValid = await argon.verify(user.passwordResetToken, token);
+    // const isTokenValid = await argon.verify(user.passwordResetToken, token);
+    // if (!isTokenValid || user.passwordResetExpires < new Date()) {
+    //   throw new BadRequestException('Invalid or expired reset token');
+    // }
+
+    const isTokenValid = user.passwordResetToken === token;
     if (!isTokenValid || user.passwordResetExpires < new Date()) {
       throw new BadRequestException('Invalid or expired reset token');
     }
@@ -318,7 +332,7 @@ export class AuthService {
       },
     });
 
-    return { message: 'Password reset successfully' };
+    return 'Password reset successfully';
   }
 
   async validateToken(token: string) {
