@@ -332,13 +332,6 @@ export class QuestionGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('endGame')
   async handleEndGame() {
-    if (currentGameId === 0) {
-      this.server.emit('error', {
-        message: 'No game in progress',
-      });
-      return;
-    }
-
     this.server.emit('endGame', { gameId: currentGameId });
     this.schedulerRegistry.getTimeouts().forEach((timeout) => {
       console.log('Clearing timeout', timeout);
