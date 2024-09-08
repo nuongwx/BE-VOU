@@ -28,6 +28,23 @@ import { QuizModule } from '../quiz/quiz.module';
         inject: [ConfigService],
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'EVENT_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'event_queue',
+            queueOptions: {
+              durable: false,
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
     QuizModule,
   ],
   providers: [QuestionResolver, QuestionService, QuestionGateway],

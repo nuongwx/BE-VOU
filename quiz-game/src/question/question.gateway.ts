@@ -85,6 +85,7 @@ export class QuestionGateway implements OnGatewayDisconnect {
     private readonly prismaService: PrismaService,
     private readonly quizGameService: QuizGameService,
     private readonly configService: ConfigService,
+    @Inject('EVENT_SERVICE') private readonly eventClient: ClientProxy,
   ) {}
 
   handleDisconnect(client: Socket) {
@@ -190,6 +191,11 @@ export class QuestionGateway implements OnGatewayDisconnect {
         });
         return;
       }
+
+      this.eventClient.emit('notify_favourites', {
+        eventId: game.eventId,
+        message: 'A new quiz game is starting!',
+      });
     } else {
       this.server.emit('error', {
         message: 'Invalid quiz game ID',
